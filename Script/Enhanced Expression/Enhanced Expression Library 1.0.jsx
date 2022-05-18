@@ -697,13 +697,22 @@ var LayerExtra = function () {
     var module = {};
 
     //设置锚点位置//
-    module.setAnchor = function (xAlignment, yAlignment) {
-        var targetLayer = thisLayer;
+    module.setAnchor = function (xAlignment, yAlignment, targetLayer) {
+        targetLayer = targetLayer || thisLayer;
         var layerSource = targetLayer.sourceRectAtTime();
         var horizontal = { left: 0, center: 0.5, right: 1 };
         var vertical = { top: 0, center: 0.5, bottom: 1 };
         var xValue = xAlignment != undefined ? thisLayer.add(layerSource.left, thisLayer.mul(layerSource.width, horizontal[xAlignment])) : thisProperty.value[0];
         var yValue = yAlignment != undefined ? thisLayer.add(layerSource.top, thisLayer.mul(layerSource.height, vertical[yAlignment])) : thisProperty.value[1];
+        return [xValue, yValue];
+    }
+
+    //设置锚点比例//
+    module.setAnchorByRate = function (xRate, yRate, targetLayer) {
+        targetLayer = targetLayer || thisLayer;
+        var layerSource = targetLayer.sourceRectAtTime();
+        var xValue = xRate != undefined ? thisLayer.add(layerSource.left, thisLayer.mul(layerSource.width, xRate)) : thisProperty.value[0];
+        var yValue = yRate != undefined ? thisLayer.add(layerSource.top, thisLayer.mul(layerSource.height, yRate)) : thisProperty.value[1];
         return [xValue, yValue];
     }
 
@@ -764,7 +773,7 @@ var LayerExtra = function () {
             childLayer = childLayer.parent;
         }
         var parentLayer = childLayer;
-        return targetLayer.toComp(parentLayer.transform.anchorPoint);
+        return targetLayer.toWorld(parentLayer.transform.anchorPoint);
     }
 
     //设置属性父级(时间)//
