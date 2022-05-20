@@ -34,8 +34,10 @@ var script = {
     developerURL: "https://space.bilibili.com/6885250",
     qq: "http://wpa.qq.com/msgrd?_v=3^&uin=1239245970^&site=qq^&menu=yes",
     qqGroup: "https://jq.qq.com/?_wv=1027^&k=9RJO2iYV",
-    chineeseDocs:"https://docs.qq.com/doc/DVmJvR0JoZ3puZVdP",
-    englishDocs:"https://docs.qq.com/doc/DVlVWVmNGa0ROUWxV",
+    chineseEditDocs:"https://docs.qq.com/doc/DVmJvR0JoZ3puZVdP",
+    chineseDocs:"https://docs.qq.com/doc/p/afe9c19f12644a0539ae1eadc3a40bff9f297741",
+    englishEditDocs:"https://docs.qq.com/doc/DVlVWVmNGa0ROUWxV",
+    englishDocs:"https://docs.qq.com/doc/p/e5ec0353216fbfd327153b45d0851d4935e17f20",
     github:"https://github.com/dreamstring/After-Effects-Enhanced-Expression",
 };
 
@@ -47,15 +49,15 @@ var palette = (function () {
     var mainWindow = (panelGlobal instanceof Panel) ? panelGlobal : new Window("palette", undefined, undefined, { resizeable: true });
     if (!(panelGlobal instanceof Panel)) mainWindow.text = "Dialog";
     mainWindow.orientation = "row";
-    mainWindow.spacing = 0;
-    mainWindow.margins = 0;
+    mainWindow.spacing = 5;
+    mainWindow.margins = 10;
 
     //--- 主面板 ---//
     var mainGroup = mainWindow.add("group", undefined, { name: "主面板" });
     mainGroup.preferredSize.width = 210;
     mainGroup.orientation = "column";
     mainGroup.spacing = 5;
-    mainGroup.margins = 5;
+    mainGroup.margins = 2;
     mainGroup.properties.resizeable = true;
     mainGroup.alignment = ["left", "fill"];
 
@@ -163,17 +165,44 @@ var palette = (function () {
     injectButton.text = "注入";
 
     //--- 增强表达式列表 ---//
-    var treeGroup = mainWindow.add("group", undefined, { name: "treeGroup" });
-    treeGroup.orientation = "row";
-    mainWindow.spacing = 5;
-    mainWindow.margins = 10;
+    var listGroup = mainWindow.add("group", undefined, { name: "treeGroup" });
+    listGroup.orientation = "column";
+    listGroup.spacing = 5;
+    listGroup.margins = 1;
+    listGroup.alignment = ["fill", "fill"];
+    listGroup.alignChildren = ["fill", "fill"];
+
+    var treeGroup = listGroup.add("group", undefined, { name: "treeGroup" });
+    treeGroup.orientation = "column";
+    treeGroup.spacing = 0;
+    treeGroup.margins = 0;
     treeGroup.alignment = ["fill", "fill"];
     treeGroup.alignChildren = ["fill", "fill"];
-    var treeView = treeGroup.add("treeview", [0, 0, 100, 350], undefined, { name: "treeview" });
+    var treeView = treeGroup.add("treeview", [0, 0, 150, 350], undefined, { name: "treeview" });
+
+    var searchGroup = listGroup.add("group", undefined, { name: "searchGroup" });
+    searchGroup.orientation = "column";
+    searchGroup.spacing = 0;
+    searchGroup.margins = 0;
+    searchGroup.alignment = ["fill", "bottom"];
+    var inputTips = "请输入搜索关键字";
+    var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { multiline: false, scrolling: false });
+    searchText.alignment = ["fill", "fill"];
+
+    searchText.onActivate = function () {
+        if (this.textCache === inputTips) return;
+        if (this.text === inputTips) this.text = "";
+    };
+    
+    searchText.addEventListener("blur", function () {
+        this.textCache = this.text;
+        if (this.text === "") this.text = inputTips;
+    });
 
     //添加node和item
     for (key in expressionList) {
-        var node, item;
+        var node;
+        var item;
         if (key.toString().slice(-4) == "Node") {
             nodeName = key.toString();
             node = treeView.add("node", nodeName.slice(0, nodeName.length - 5));
@@ -244,7 +273,7 @@ var palette = (function () {
     var github1 = createImageFile("githubButton1", github1_imgString, getIconsFolder());
     var github2 = createImageFile("githubButton2", github2_imgString, getIconsFolder());
     var tencentDocs1 = createImageFile("tencentDocs1", tencentDocs1_imgString, getIconsFolder());
-    var tencentDocs2 = createImageFile("tencentDocs1", tencentDocs2_imgString, getIconsFolder());
+    var tencentDocs2 = createImageFile("tencentDocs2", tencentDocs2_imgString, getIconsFolder());
 
     var qqIcons = ScriptUI.newImage(qq1, qq1, qq2, qq2);
     var qqGroupIcons = ScriptUI.newImage(qqGroup1, qqGroup1, qqGroup2, qqGroup2);
@@ -299,7 +328,7 @@ var palette = (function () {
 
         button1.onClick = function () {
             var docs;
-            if($.locale=="zh_CN") docs = script.chineeseDocs;
+            if($.locale=="zh_CN") docs = script.chineseDocs;
             if($.locale=="en_US") docs = script.englishDocs
             urlOpen(docs);
             finalError = "腾讯文档: " + docs;
@@ -486,6 +515,46 @@ var palette = (function () {
             }
         }
     });
+
+    searchText.onChanging = function () {
+        var textTemp = searchText.text == inputTips ? "" : searchText.text.toLowerCase();
+        treeView.removeAll();
+        
+            for (key in expressionList) {
+                var description =  expressionList[key];
+                var helpTip = helptipList[key.toString().slice(0,key.length-5)];
+                if (textTemp == "") {
+                var node;
+                var item;
+                if (key.toString().slice(-4) == "Node") {
+                    nodeName = key.toString();
+                    node = treeView.add("node", nodeName.slice(0, nodeName.length - 5));
+                }
+                if (key.toString().slice(-4) == "Item") {
+                    itemName = key.toString();
+                    item = node.add("item", itemName.slice(0, itemName.length - 5));
+                }
+            }
+            else{
+                itemName = key.toString();
+                if (key.toLowerCase().indexOf(textTemp) >= 0) {
+                    item = treeView.add("item", itemName.slice(0, itemName.length - 5));
+                    continue;
+                }
+                if (description.toLowerCase().indexOf(textTemp)>= 0) {
+                    item = treeView.add("item", itemName.slice(0, itemName.length - 5));
+                    continue;
+                }
+                if (helpTip.toLowerCase().indexOf(textTemp)>= 0) {
+                    item = treeView.add("item", itemName.slice(0, itemName.length - 5));
+                    continue;
+                }
+            }
+        }     
+        if (scriptList.items.length > 0) scriptList.selection = 0;
+    }
+
+    
 
     function onlyOpenActiveComp() {
         var myComp = app.project.activeItem;
