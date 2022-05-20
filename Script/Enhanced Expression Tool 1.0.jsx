@@ -56,8 +56,8 @@ var palette = (function () {
     var mainGroup = mainWindow.add("group", undefined, { name: "主面板" });
     mainGroup.preferredSize.width = 210;
     mainGroup.orientation = "column";
-    mainGroup.spacing = 5;
-    mainGroup.margins = 2;
+    mainGroup.spacing = 3;
+    mainGroup.margins = 0;
     mainGroup.properties.resizeable = true;
     mainGroup.alignment = ["left", "fill"];
 
@@ -65,7 +65,7 @@ var palette = (function () {
     var expressionEngineSwitchingGroup = mainGroup.add("group", undefined, { name: "expressionEngineSwitchingGroup" });
     expressionEngineSwitchingGroup.orientation = "row";
     expressionEngineSwitchingGroup.spacing = 10;
-    expressionEngineSwitchingGroup.margins = 1;
+    expressionEngineSwitchingGroup.margins = 0;
     expressionEngineSwitchingGroup.alignment = ["center", "top"];
 
     var esButton = expressionEngineSwitchingGroup.add("radiobutton", undefined, undefined, { name: "esButton" });
@@ -141,7 +141,7 @@ var palette = (function () {
     var errorPanel = errorGroup.add("edittext", [0, 0, 260, 150], "", { multiline: true, scrolling: false });
     errorPanel.orientation = "column";
     errorPanel.alignment = ["fill", "fill"];
-    errorPanel.margins = 1;
+    errorPanel.margins = 0;
     errorPanel.text = "";
     errorPanel.visible = true;
 
@@ -168,7 +168,7 @@ var palette = (function () {
     var listGroup = mainWindow.add("group", undefined, { name: "treeGroup" });
     listGroup.orientation = "column";
     listGroup.spacing = 5;
-    listGroup.margins = 1;
+    listGroup.margins = 0;
     listGroup.alignment = ["fill", "fill"];
     listGroup.alignChildren = ["fill", "fill"];
 
@@ -178,7 +178,7 @@ var palette = (function () {
     treeGroup.margins = 0;
     treeGroup.alignment = ["fill", "fill"];
     treeGroup.alignChildren = ["fill", "fill"];
-    var treeView = treeGroup.add("treeview", [0, 0, 150, 350], undefined, { name: "treeview" });
+    var treeView = treeGroup.add("treeview", [0, 0, 150, 340], undefined, { name: "treeview" });
 
     var searchGroup = listGroup.add("group", undefined, { name: "searchGroup" });
     searchGroup.orientation = "column";
