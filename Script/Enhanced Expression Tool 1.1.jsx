@@ -30,7 +30,7 @@ var palette = (function () {
 
     //--- 构建UI ---//  
     var mainWindow = (panelGlobal instanceof Panel) ? panelGlobal : new Window("palette", undefined, undefined, { resizeable: true });
-    if (!(panelGlobal instanceof Panel)) mainWindow.text = "Dialog";
+    if (!(panelGlobal instanceof Panel)) mainWindow.text = script.name;
     mainWindow.orientation = "row";
     mainWindow.spacing = 5;
     mainWindow.margins = 10;
@@ -137,66 +137,157 @@ var palette = (function () {
 
     //--- 按钮组 ---//
     var buttonsGroup = mainGroup.add("group", undefined, { name: "buttonsGroup" });
-    buttonsGroup.alignChildren = ["fill", "fill"];
     buttonsGroup.margins = 1;
+    buttonsGroup.spacing = 6;
     buttonsGroup.alignment = ["fill", "bottom"];
 
     var refreshButton = buttonsGroup.add("button", undefined, undefined, { name: "refreshButton" });
     refreshButton.text = "刷新";
+    refreshButton.alignment = ["fill", "fill"];
 
     var injectButton = buttonsGroup.add("button", undefined, undefined, { name: "injectButton" });
     injectButton.text = "注入";
+    injectButton.alignment = ["fill", "fill"];
+
+    var expandButton = buttonsGroup.add("button", [0, 0, 27, 27], undefined, { name: "expandButton" });
+    expandButton.text = "◁";
+    expandButton.alignment = ["right", "fill"];
 
     //--- 增强表达式列表 ---//
-    var listGroup = mainWindow.add("group", undefined, { name: "treeGroup" });
-    listGroup.orientation = "column";
-    listGroup.spacing = 5;
-    listGroup.margins = 0;
-    listGroup.alignment = ["fill", "fill"];
-    listGroup.alignChildren = ["fill", "fill"];
+    var listGroup ;
+    mainWindow.addListGroup = function () {
+        listGroup = mainWindow.add("group", undefined, { name: "listGroup" });
+        listGroup.orientation = "column";
+        listGroup.spacing = 5;
+        listGroup.margins = 0;
+        listGroup.alignment = ["fill", "fill"];
+        listGroup.alignChildren = ["fill", "fill"];
 
-    var treeGroup = listGroup.add("group", undefined, { name: "treeGroup" });
-    treeGroup.orientation = "column";
-    treeGroup.spacing = 0;
-    treeGroup.margins = 0;
-    treeGroup.alignment = ["fill", "fill"];
-    treeGroup.alignChildren = ["fill", "fill"];
-    var treeView = treeGroup.add("treeview", [0, 0, 150, 340], undefined, { name: "treeview" });
+        var treeGroup = listGroup.add("group", undefined, { name: "treeGroup" });
+        treeGroup.orientation = "column";
+        treeGroup.spacing = 0;
+        treeGroup.margins = 0;
+        treeGroup.alignment = ["fill", "fill"];
+        treeGroup.alignChildren = ["fill", "fill"];
+        var treeView = treeGroup.add("treeview", [0, 0, 150, 340], undefined, { name: "treeview" });
 
-    var searchGroup = listGroup.add("group", undefined, { name: "searchGroup" });
-    searchGroup.orientation = "column";
-    searchGroup.spacing = 0;
-    searchGroup.margins = 0;
-    searchGroup.alignment = ["fill", "bottom"];
-    var inputTips = "请输入搜索关键字";
-    var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { multiline: false, scrolling: false });
-    searchText.alignment = ["fill", "fill"];
+        var searchGroup = listGroup.add("group", undefined, { name: "searchGroup" });
+        searchGroup.orientation = "column";
+        searchGroup.spacing = 0;
+        searchGroup.margins = 0;
+        searchGroup.alignment = ["fill", "bottom"];
+        var inputTips = "请输入搜索关键字";
+        var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { multiline: false, scrolling: false });
+        searchText.alignment = ["fill", "fill"];
 
-    searchText.onActivate = function () {
-        if (this.textCache === inputTips) return;
-        if (this.text === inputTips) this.text = "";
-    };
+        searchText.onActivate = function () {
+            if (this.textCache === inputTips) return;
+            if (this.text === inputTips) this.text = "";
+        };
 
-    searchText.addEventListener("blur", function () {
-        this.textCache = this.text;
-        if (this.text === "") this.text = inputTips;
-    });
+        searchText.addEventListener("blur", function () {
+            this.textCache = this.text;
+            if (this.text === "") this.text = inputTips;
+        });
 
-    //添加node和item
-    for (key in expressionList) {
-        var treeElement = key.toString().slice(-4);
-        var elementFullName = key.toString();
-        var elementName = elementFullName.slice(0, elementFullName.length - 5);
-        if (treeElement == "Node") node = treeView.add("node", elementName);
-        if (treeElement == "Item") item = node.add("item", elementName);
+        //添加node和item
+        for (key in expressionList) {
+            var treeElement = key.toString().slice(-4);
+            var elementFullName = key.toString();
+            var elementName = elementFullName.slice(0, elementFullName.length - 5);
+            if (treeElement == "Node") node = treeView.add("node", elementName);
+            if (treeElement == "Item") item = node.add("item", elementName);
+        }
+
+        searchText.onChanging = function () {
+            var textTemp = searchText.text == inputTips ? "" : searchText.text.toLowerCase();
+            treeView.removeAll();
+
+            for (key in expressionList) {
+                var description = expressionList[key];
+                var helpTip = helptipList[key.toString().slice(0, key.length - 5)];
+                if (textTemp == "") {
+                    var treeElement = key.toString().slice(-4);
+                    var elementFullName = key.toString();
+                    var elementName = elementFullName.slice(0, elementFullName.length - 5);
+                    if (treeElement == "Node") node = treeView.add("node", elementName);
+                    if (treeElement == "Item") item = node.add("item", elementName);
+                }
+                else {
+                    itemName = key.toString();
+                    if (key.toLowerCase().indexOf(textTemp) >= 0) {
+                        item = treeView.add("item", itemName.slice(0, itemName.length - 5));
+                        continue;
+                    }
+                    if (description.toLowerCase().indexOf(textTemp) >= 0) {
+                        item = treeView.add("item", itemName.slice(0, itemName.length - 5));
+                        continue;
+                    }
+                    if (helpTip.toLowerCase().indexOf(textTemp) >= 0) {
+                        item = treeView.add("item", itemName.slice(0, itemName.length - 5));
+                        continue;
+                    }
+                }
+            }
+            if (scriptList.items.length > 0) scriptList.selection = 0;
+        }
+
+        //树的双击事件
+        treeView.onDoubleClick = function () {
+            selectionName = treeView.selection.toString();
+            expressionStatement = expressionList[selectionName + "_Item"];
+            if (expressionStatement != undefined) {
+                addExpression(expressionStatement);
+                return;
+            }
+            expressionStatement = expressionList[selectionName + "_Node"];
+            if (expressionStatement != undefined) {
+                addExpression(expressionStatement);
+                return;
+            }
+        }
+
+        //树的单击事件
+        treeView.onChange = treeView.onChanging = function () {
+            selectionName = treeView.selection.toString();
+            finalError = helptipList[selectionName];
+            errorPanel.text = finalError;
+        }
+
+        treeView.addEventListener("click", function (e) {
+            if (e.button == 2 && treeView.selection) {
+                selectionName = treeView.selection.toString();
+                expressionStatement = expressionList[selectionName + "_Item"];
+                if (expressionStatement != undefined) {
+                    expressionArray = expressionStatement.split(".");
+                    expressionSugar = expressionStatement.slice(expressionArray[0].length + 1);
+                    if (expressionSugar == "") expressionSugar = expressionStatement;
+                    addExpression(expressionSugar);
+                    return;
+                }
+                expressionStatement = expressionList[selectionName + "_Node"];
+                if (expressionStatement != undefined) {
+                    expressionArray = expressionStatement.split(".");
+                    expressionSugar = expressionStatement.slice(expressionArray[0].length + 1);
+                    if (expressionSugar == "") expressionSugar = expressionStatement;
+                    addExpression(expressionSugar);
+                    return;
+                }
+            }
+        });
+
     }
+
+    mainWindow.addListGroup();
 
     //--- 主界面按钮事件 ---//
-    if (app.project.expressionEngine == "javascript-1.0") {
-        jsButton.value = true;
-    } else {
-        esButton.value = true;
+    function setEngineButton() {
+        return function () {
+            if (app.project.expressionEngine == "javascript-1.0") jsButton.value = true;
+            else esButton.value = true;
+        }
     }
+    (setEngineButton());
 
     esButton.onClick = jsButton.onClick = clickEvent;
     function clickEvent() {
@@ -221,6 +312,25 @@ var palette = (function () {
         finalError = "表达式引擎已成功切换至" + "\n" + expressionEngineName;
         errorPanel.text = finalError;
     }
+
+    expandButton.onClick = function () {
+        if (expandButton.text == "◁") {
+            mainWindow.remove(listGroup);
+            mainWindow.layout.layout(1);
+            mainWindow.layout.resize();
+            return expandButton.text = "▶";
+        }
+        if (expandButton.text == "▶") {
+            var tempHeight = mainWindow.size[1];
+            mainWindow.addListGroup();
+            mainWindow.layout.layout(1);
+            mainWindow.size[1] = tempHeight;
+            mainWindow.layout.resize();
+            return expandButton.text = "◁";
+        }
+    }
+
+    mainWindow.addEventListener("mouseover",setEngineButton());
 
     var getWindow = new SingletonWindow("palette", "帮助面板");
 
@@ -497,38 +607,6 @@ var palette = (function () {
         }
     });
 
-    searchText.onChanging = function () {
-        var textTemp = searchText.text == inputTips ? "" : searchText.text.toLowerCase();
-        treeView.removeAll();
-
-        for (key in expressionList) {
-            var description = expressionList[key];
-            var helpTip = helptipList[key.toString().slice(0, key.length - 5)];
-            if (textTemp == "") {
-                var treeElement = key.toString().slice(-4);
-                var elementFullName = key.toString();
-                var elementName = elementFullName.slice(0, elementFullName.length - 5);
-                if (treeElement == "Node") node = treeView.add("node", elementName);
-                if (treeElement == "Item") item = node.add("item", elementName);
-            }
-            else {
-                itemName = key.toString();
-                if (key.toLowerCase().indexOf(textTemp) >= 0) {
-                    item = treeView.add("item", itemName.slice(0, itemName.length - 5));
-                    continue;
-                }
-                if (description.toLowerCase().indexOf(textTemp) >= 0) {
-                    item = treeView.add("item", itemName.slice(0, itemName.length - 5));
-                    continue;
-                }
-                if (helpTip.toLowerCase().indexOf(textTemp) >= 0) {
-                    item = treeView.add("item", itemName.slice(0, itemName.length - 5));
-                    continue;
-                }
-            }
-        }
-        if (scriptList.items.length > 0) scriptList.selection = 0;
-    }
 
     function onlyOpenActiveComp() {
         var myComp = app.project.activeItem;
@@ -566,51 +644,11 @@ var palette = (function () {
         return;
     }
 
-    //树的双击事件
-    treeView.onDoubleClick = function () {
-        selectionName = treeView.selection.toString();
-        expressionStatement = expressionList[selectionName + "_Item"];
-        if (expressionStatement != undefined) {
-            addExpression(expressionStatement);
-            return;
-        }
-        expressionStatement = expressionList[selectionName + "_Node"];
-        if (expressionStatement != undefined) {
-            addExpression(expressionStatement);
-            return;
-        }
-    }
-
-    //树的单击事件
-    treeView.onChange = treeView.onChanging = function () {
-        selectionName = treeView.selection.toString();
-        finalError = helptipList[selectionName];
-        errorPanel.text = finalError;
-    }
-
-    treeView.addEventListener("click", function (e) {
-        if (e.button == 2 && treeView.selection) {
-            selectionName = treeView.selection.toString();
-            expressionStatement = expressionList[selectionName + "_Item"];
-            if (expressionStatement != undefined) {
-                expressionArray = expressionStatement.split(".");
-                expressionSugar = expressionStatement.slice(expressionArray[0].length + 1);
-                if (expressionSugar == "") expressionSugar = expressionStatement;
-                addExpression(expressionSugar);
-                return;
-            }
-            expressionStatement = expressionList[selectionName + "_Node"];
-            if (expressionStatement != undefined) {
-                expressionArray = expressionStatement.split(".");
-                expressionSugar = expressionStatement.slice(expressionArray[0].length + 1);
-                if (expressionSugar == "") expressionSugar = expressionStatement;
-                addExpression(expressionSugar);
-                return;
-            }
-        }
-    });
-
     //--- 面板自适应以及显示 ---//
+    mainWindow.addEventListener("keydown", function (e) {
+        if (e.keyName == "Escape") this.close();
+      
+    });
     mainWindow.layout.layout(true);
     mainWindow.layout.resize();
     mainWindow.onResizing = mainWindow.onResize = function () { this.layout.resize(); }
