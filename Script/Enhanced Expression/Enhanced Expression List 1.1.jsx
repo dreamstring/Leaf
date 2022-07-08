@@ -77,6 +77,7 @@ var expressionList = {
     "getChildTruePosition_Item": "LayerExtra.getChildTruePosition(targetLayer)",
     "setParentPropertyAtTime_Item": "LayerExtra.setParentPropertyAtTime(targetLayer, delayFrame = 0, mode = \"separate\")",
     "setParentPropertyAtFrame_Item": "LayerExtra.setParentPropertyAtFrame(targetLayer, delayFrame = 0, mode = \"separate\")",
+    "typewriterEffect_Item": "LayerExtra.typewriterEffect(delay = 0.1)",
     "opacityControl_Item": "LayerExtra.opacityControl()",
     "compositeMotionPath_Item": "LayerExtra.compositeMotionPath(shapeValue, sliderControl, targetLayer = thisLayer)",
     //--- 摄像机 ---//
@@ -649,6 +650,13 @@ var helptipList = {
         + "\n  1.position:位置属性。"
         + "\n  2.rotation:旋转属性。"
         + "\n  3.scale:缩放属性。",
+    "typewriterEffect": "typewriterEffect( )"
+        + "\n"
+        + "\n全名:LayerExtra.LayerExtra.typewriterEffect(delay = 0.1)"
+        + "\n说明:打字机效果。"
+        + "\n参数:"
+        + "\n  1.delay:字符间延迟时间。"
+        + "\n返回:对象(Object)。",
     "opacityControl": "opacityControl( )"
         + "\n"
         + "\n全名:LayerExtra.opacityControl( )"
@@ -1170,14 +1178,16 @@ var helptipList = {
         + "\n返回:字符串(String)。",
     "textGlitchRandom": "textGlitchRandom( )"
         + "\n"
-        + "\n全名:TextExtra.textGlitchRandom(keyOrMarkerControl, startText, endText, offset, rate) "
+        + "\n全名:textGlitchRandom = function (keyOrMarkerControl, startText, endText, offset, mode, rate)"
         + "\n说明:字符故障随机。"
         + "\n参数:"
         + "\n  1.keyOrMarkerControl:将关键帧或标记关键帧属性用作控制器,关键帧一般用滑块控制器。"
         + "\n  2.startText:初始字符串,未输入时默认为sourceText。"
         + "\n  3.endText:末尾字符串,未输入时默认为和初始字符串个数相同的/。"
         + "\n  4.offset:偏移时间,未输入时默认为0。"
-        + "\n  5.rate:刷新的速率,未输入时默认为每秒15帧。"
+        + "\n  5.mode:随机字符范围模式,可选「full」「letters」,未输入时默认为full。"
+        + "\n  full模式下随机字符范围为全英文字符,letters模式下随机字符范围为全英文字母。"
+        + "\n  6.rate:刷新的速率,未输入时默认为每秒15帧。"
         + "\n返回:字符串(String)。",
     "repeat": "repeat( )"
         + "\n"

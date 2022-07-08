@@ -9,7 +9,7 @@ var compStartTime = thisComp.displayStartTime;//当前合成的开始时间
 var compEndTime = compStartTime + compDuration;//当前合成的结束时间
 var compWidth = thisComp.width;//当前合成的宽度
 var compHeight = thisComp.height;//当前合成的高度
-var compSize = [compWidth,compHeight];//当前合成大小
+var compSize = [compWidth, compHeight];//当前合成大小
 var timeCode = timeToTimecode(thisLayer.time + thisComp.displayStartTime, fps, false);//时间码
 var timeEpsilon = compFrameDuration / 10;//帧间极小值
 var nativeCode = "function () { [native code] }";//原生代码
@@ -20,13 +20,8 @@ var fullPath = thisLayer.thisProject.fullPath;//完整路径
 
 //抛出错误//
 function alert(e) {
-    if (getExpressionEngine() == "js") {
-        throw new Error(e);
-    }
-    if (getExpressionEngine() == "es") {
-        $.error = e;
-    }
-
+    if (getExpressionEngine() == "js") throw new Error(e);
+    if (getExpressionEngine() == "es") $.error = e;
 }
 
 //从标记调用表达式//
@@ -60,12 +55,8 @@ function getLanguage() {
 //获得对象的类型//
 function getClassName(targetObject) {
     var expressionEngine = getExpressionEngine();
-    if (expressionEngine == "js") {
-        return targetObject.className.toString();
-    }
-    if (expressionEngine == "es") {
-        return targetObject.constructor.name.toString();
-    }
+    if (expressionEngine == "js") return targetObject.className.toString();
+    if (expressionEngine == "es") return targetObject.constructor.name.toString();
 }
 
 //判断属性索引是否有效//
@@ -178,12 +169,8 @@ var VectorMathExtra = function () {
         judge1 = VectorMathExtra.getVectorAngle(thisLayer.sub(center1, position1), tangent1);
         judge2 = VectorMathExtra.getVectorAngle(thisLayer.sub(center2, position1), tangent1);
         //两个切向量和交点径向量夹角夹角小的是正解(或者说叫优解)
-        if (Math.abs(Math.PI / 2 - judge1) < Math.abs(Math.PI / 2 - judge2)) {
-            center = center1;
-        }
-        else {
-            center = center2;
-        }
+        if (Math.abs(Math.PI / 2 - judge1) < Math.abs(Math.PI / 2 - judge2)) center = center1;
+        else center = center2;
         return {
             R: R,
             center: center,
@@ -218,6 +205,21 @@ var VectorMathExtra = function () {
         }
         return distance;
     };
+
+    //矩阵乘法//
+    module.matrixMul = function (matrix1, matrix2) {
+        var result = new Array(matrix1.length);
+        for (var i = 0; i < matrix1.length; i++) {
+            result[i] = new Array(matrix2[0].length);
+            for (var j = 0; j < matrix2[0].length; j++) {
+                result[i][j] = 0;
+                for (var k = 0; k < matrix2.length; k++) {
+                    result[i][j] += matrix1[i][k] * matrix2[k][j];
+                }
+            }
+        }
+        return result;
+    }
 
     //计算数量积//
     module.multiply = function (array1, array2) {
@@ -366,18 +368,10 @@ var InterpolationExtra = function () {
     //设置插值模式//
     module.setInterpolation = function (t, tMin, tMax, value1, value2, mode) {
         mode = mode || "linear";
-        if (mode == "linear") {
-            return thisLayer.linear(t, tMin, tMax, value1, value2);
-        }
-        if (mode == "ease") {
-            return thisLayer.ease(t, tMin, tMax, value1, value2);
-        }
-        if (mode == "easeIn") {
-            return thisLayer.easeIn(t, tMin, tMax, value1, value2);
-        }
-        if (mode == "easeIOut") {
-            return thisLayer.easeOut(t, tMin, tMax, value1, value2);
-        }
+        if (mode == "linear") return thisLayer.linear(t, tMin, tMax, value1, value2);
+        if (mode == "ease") return thisLayer.ease(t, tMin, tMax, value1, value2);
+        if (mode == "easeIn") return thisLayer.easeIn(t, tMin, tMax, value1, value2);
+        if (mode == "easeIOut") return thisLayer.easeOut(t, tMin, tMax, value1, value2);
     };
 
     //设置缓动模式//
@@ -410,8 +404,7 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInOutCubic = function (elapsedTime, beginValue, changeValue, duration) {
-            if ((elapsedTime /= duration / 2) < 1)
-                return changeValue / 2 * Math.pow(elapsedTime, 3) + beginValue;
+            if ((elapsedTime /= duration / 2) < 1) return changeValue / 2 * Math.pow(elapsedTime, 3) + beginValue;
             return changeValue / 2 * (Math.pow(elapsedTime - 2, 3) + 2) + beginValue;
         };
 
@@ -424,8 +417,7 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInOutQuart = function (elapsedTime, beginValue, changeValue, duration) {
-            if ((elapsedTime /= duration / 2) < 1)
-                return changeValue / 2 * Math.pow(elapsedTime, 4) + beginValue;
+            if ((elapsedTime /= duration / 2) < 1) return changeValue / 2 * Math.pow(elapsedTime, 4) + beginValue;
             return -changeValue / 2 * (Math.pow(elapsedTime - 2, 4) - 2) + beginValue;
         };
 
@@ -438,8 +430,7 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInOutQuint = function (elapsedTime, beginValue, changeValue, duration) {
-            if ((elapsedTime /= duration / 2) < 1)
-                return changeValue / 2 * Math.pow(elapsedTime, 5) + beginValue;
+            if ((elapsedTime /= duration / 2) < 1) return changeValue / 2 * Math.pow(elapsedTime, 5) + beginValue;
             return changeValue / 2 * (Math.pow(elapsedTime - 2, 5) + 2) + beginValue;
         };
 
@@ -464,8 +455,7 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInOutExpo = function (elapsedTime, beginValue, changeValue, duration) {
-            if ((elapsedTime /= duration / 2) < 1)
-                return changeValue / 2 * Math.pow(2, 10 * (elapsedTime - 1)) + beginValue;
+            if ((elapsedTime /= duration / 2) < 1) return changeValue / 2 * Math.pow(2, 10 * (elapsedTime - 1)) + beginValue;
             return changeValue / 2 * (-Math.pow(2, -10 * --elapsedTime) + 2) + beginValue;
         };
 
@@ -478,8 +468,7 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInOutCirc = function (elapsedTime, beginValue, changeValue, duration) {
-            if ((elapsedTime /= duration / 2) < 1)
-                return changeValue / 2 * (1 - Math.sqrt(1 - elapsedTime * elapsedTime)) + beginValue;
+            if ((elapsedTime /= duration / 2) < 1) return changeValue / 2 * (1 - Math.sqrt(1 - elapsedTime * elapsedTime)) + beginValue;
             return changeValue / 2 * (Math.sqrt(1 - (elapsedTime -= 2) * elapsedTime) + 1) + beginValue;
         };
 
@@ -556,6 +545,7 @@ var InterpolationExtra = function () {
 
         return easingMode[mode](elapsedTime, beginValue, changeValue, duration);
     }
+
     return module;
 }()
 
@@ -757,21 +747,18 @@ var LayerExtra = function () {
             : [100 * scaleFactorWidth, 100 * scaleFactorHeight];
     }
 
-
     //字体切换//
     module.fontSwitching = function (sliderControl, targetComp) {
         var textIndex = Math.floor(MathExtra.getRemainder(sliderControl, targetComp.numLayers) + 1);
         var fontName = targetComp.layer(textIndex).text.sourceText.style.font; //合成内所有文字层的字体
-        return text.sourceText.style.setFont(fontName); //设置为当前字体
+        return thisLayer.text.sourceText.style.setFont(fontName); //设置为当前字体
     }
 
     //获得子级的真实位置//
     module.getChildTruePosition = function (targetLayer) {
         targetLayer = targetLayer || thisLayer;
         var childLayer = targetLayer;
-        while (childLayer.hasParent) {
-            childLayer = childLayer.parent;
-        }
+        while (childLayer.hasParent) childLayer = childLayer.parent;
         var parentLayer = childLayer;
         return targetLayer.toWorld(parentLayer.transform.anchorPoint);
     }
@@ -781,9 +768,7 @@ var LayerExtra = function () {
         var parentPosition = targetLayer.transform.position;
         var parentRotation = targetLayer.transform.rotation;
         var parentScale = targetLayer.transform.scale;
-        if (mode == undefined) {
-            mode = "separate";
-        }
+        if (mode == undefined) mode = "separate";
         delayTime = delayTime || 0;//延迟时间
         var positionResult = thisLayer.transform.position.value;
         var rotationResult = thisLayer.transform.rotation.value;
@@ -799,18 +784,14 @@ var LayerExtra = function () {
             var rotationStartTime = parentRotation.key(1).time;
             var parentRotationChanged = sub(parentRotation.valueAtTime(thisLayer.time - delayTime), parentRotation.valueAtTime(rotationStartTime));
             positionResult = VectorMathExtra.rotate(parentPosition.valueAtTime(thisLayer.time - delayTime), positionResult, parentRotationChanged);
-            if (mode == "connect") {
-                rotationResult = add(rotationResult, parentRotationChanged);
-            }
+            if (mode == "connect") rotationResult = add(rotationResult, parentRotationChanged);
         }
         //线性缩放
         if (parentScale != undefined && parentScale.numKeys > 1) {
             var scaleStartTime = parentScale.key(1).time;
             var parentScaleChanged = VectorMathExtra.divide(parentScale.valueAtTime(thisLayer.time - delayTime), parentScale.valueAtTime(scaleStartTime));
             positionResult = VectorMathExtra.scale(parentPosition.valueAtTime(thisLayer.time - delayTime), positionResult, parentScaleChanged);
-            if (mode == "connect") {
-                scaleResult = VectorMathExtra.multiply(scaleResult, parentScaleChanged);
-            }
+            if (mode == "connect") scaleResult = VectorMathExtra.multiply(scaleResult, parentScaleChanged);
         }
         //合起来是线性变换
         return {
@@ -825,9 +806,7 @@ var LayerExtra = function () {
         var parentPosition = targetLayer.transform.position;
         var parentRotation = targetLayer.transform.rotation;
         var parentScale = targetLayer.transform.scale;
-        if (mode == undefined) {
-            mode = "separate";
-        }
+        if (mode == undefined) mode = "separate";
         //线性平移
         delayFrame = delayFrame || 0;//时间
         var positionResult = thisLayer.transform.position.value;
@@ -843,18 +822,14 @@ var LayerExtra = function () {
             var rotationStartTime = parentRotation.key(1).time;
             var parentRotationChanged = sub(PropertyExtra.valueAtFrame(parentRotation, frames - delayFrame), PropertyExtra.valueAtFrame(parentRotation, rotationStartTime));
             positionResult = VectorMathExtra.rotate(PropertyExtra.valueAtFrame(parentPosition, frames - delayFrame), positionResult, parentRotationChanged);
-            if (mode == "connect") {
-                rotationResult = add(rotationResult, parentRotationChanged);
-            }
+            if (mode == "connect") rotationResult = add(rotationResult, parentRotationChanged);
         }
         //线性缩放
         if (parentScale != undefined && parentScale.numKeys > 1) {
             var scaleStartTime = parentScale.key(1).time;
             var parentScaleChanged = VectorMathExtra.divide(PropertyExtra.valueAtFrame(parentScale, frames - delayFrame), PropertyExtra.valueAtFrame(parentScale, scaleStartTime));
             positionResult = VectorMathExtra.scale(PropertyExtra.valueAtFrame(parentPosition, frames - delayFrame), positionResult, parentScaleChanged);
-            if (mode == "connect") {
-                scaleResult = VectorMathExtra.multiply(scaleResult, parentScaleChanged);
-            }
+            if (mode == "connect") scaleResult = VectorMathExtra.multiply(scaleResult, parentScaleChanged);
         }
         //合起来是线性变换
         return {
@@ -864,11 +839,16 @@ var LayerExtra = function () {
         }
     }
 
+    //打字机效果//
+    module.typewriterEffect = function (delay) {
+        if (delay == undefined) delay = 0.1;
+        var str = text.sourceText.value;
+        return str.substr(0, Math.floor(thisLayer.time / delay));
+    }
+
     //不透明度父子级控制//
     module.opacityControl = function () {
-        if (thisLayer.hasParent) {
-            return thisLayer.parent.transform.opacity.value * thisLayer.parent.enabled;
-        }
+        if (thisLayer.hasParent) return thisLayer.parent.transform.opacity.value * thisLayer.parent.enabled;
         return thisProperty.value;
     }
 
@@ -897,9 +877,7 @@ var CameraExtra = function () {
         for (var i = targetLayer.index + 1; i <= thisComp.numLayers; i++) {
             //将指定图层下的摄像机遍历存数组
             try {
-                if (thisComp.layer(i).cameraOption) {
-                    cameraArray.push(thisComp.layer(i));
-                }
+                if (thisComp.layer(i).cameraOption) cameraArray.push(thisComp.layer(i));
             }
             catch (e) { }
         }
@@ -909,10 +887,8 @@ var CameraExtra = function () {
             num = num + cameraArray.length;
         }
         mode = mode || "linear";
-        if (mode == "hold") {
-            //切换模式
-            return cameraArray[Math.floor(num)](previousLevelProperty)(thisProperty.name).value;
-        }
+        //切换模式
+        if (mode == "hold") return cameraArray[Math.floor(num)](previousLevelProperty)(thisProperty.name).value;
         else {
             //插值模式
             var inpointIndex = Math.floor(num);
@@ -935,9 +911,7 @@ var PathPropertyExtra = function () {
     //将点集的顺序循环偏移//
     module.cycle = function (originPoints, index) {
         var finalPoints, number;
-        if (index === 0) {
-            return originPoints;
-        }
+        if (index === 0) return originPoints;
         finalPoints = [];
         number = 0;
         for (var i = index, l = originPoints.length; i < l; i++) {
@@ -1331,7 +1305,7 @@ var PropertyExtra = function () {
         }
     }
 
-    //万能循环//
+    //默认万能循环//
     module.loopPlus = module.loopPlusAtFrame;
 
     //具体帧下的值//
@@ -1632,10 +1606,10 @@ var KeyExtra = function () {
             return val = Math.pow(lastKeyComponent, exp);
         }
 
-        var numKey = KeyExtra.getKeyParameter(undefined, thisProperty ,"num");
-        var firstKey = KeyExtra.getKeyParameter(undefined, thisProperty ,1);
+        var numKey = KeyExtra.getKeyParameter(undefined, thisProperty, "num");
+        var firstKey = KeyExtra.getKeyParameter(undefined, thisProperty, 1);
         if (numKeys > 1 && numKey.time > thisLayer.time && firstKey.time <= thisLayer.time) {
-            return PropertyExtra.setPropertyByDimension(thisProperty,calculateExponent);
+            return PropertyExtra.setPropertyByDimension(thisProperty, calculateExponent);
         }
         else {
             return thisProperty.value;
@@ -1649,18 +1623,10 @@ var KeyExtra = function () {
         num = num || 5; //抖动次数
         mode = mode || 0; //抖动模式
         modeCase = []; //不同情况下抖动的方向顺序
-        if (mode == 0) {
-            modeCase = [0, 1, 2, 3];
-        }
-        if (mode == 1) {
-            modeCase = [3, 2, 1, 0];
-        }
-        if (mode == 2) {
-            modeCase = [0, 2, 1, 3];
-        }
-        if (mode == 3) {
-            modeCase = [0, 2, 3, 1];
-        }
+        if (mode == 0) modeCase = [0, 1, 2, 3];
+        if (mode == 1) modeCase = [3, 2, 1, 0];
+        if (mode == 2) modeCase = [0, 2, 1, 3];
+        if (mode == 3) modeCase = [0, 2, 3, 1];
         //按照帧数进行运算
         if (thisLayer.marker.numKeys == 0) {
             var shakeTime = thisLayer.timeToFrames(thisLayer.time);
@@ -1739,7 +1705,7 @@ var KeyExtra = function () {
     }
 
     //通过自定义贝塞尔设置关键帧曲线
-    module.setKeyCurvesByBezier = function(shapeValue, type){
+    module.setKeyCurvesByBezier = function (shapeValue, type) {
         var lastKey = KeyExtra.getKeyParameter("last", thisProperty);
         var nextKey = KeyExtra.getKeyParameter("next", thisProperty);
         var numKeys = thisProperty.numKeys;
@@ -1933,9 +1899,7 @@ function createTree(targetObject) {
             if (isValidPropertyIndex(targetObject, index)) {
                 tree.push(targetObject(index));
             }
-            else {
-                break;
-            }
+            else break;
         }
     }
     for (var i = 0, l = tree.length; i < l; i++) {
@@ -1959,9 +1923,7 @@ function setChildren(parent) {
         if (isValidPropertyIndex(parent, index)) {
             childrenArray.push(parent(index));
         }
-        else {
-            break;
-        }
+        else break;
     }
     //链接子节点
     parent.children = childrenArray;
@@ -2330,7 +2292,8 @@ var TextExtra = function () {
     }
 
     //随机字符//
-    module.randomText = function (num) {
+    module.randomText = function (num, mode) {
+        if (mode == undefined) mode = 0;
         var finalResult = "";
         for (i = 0, l = num; i < l; i++) {
             seedRandom(i, true);
@@ -2340,7 +2303,7 @@ var TextExtra = function () {
     }
 
     //字符故障随机//
-    module.textGlitchRandom = function (keyOrMarkerControl, startText, endText, offset, rate) {
+    module.textGlitchRandom = function (keyOrMarkerControl, startText, endText, offset, mode, rate) {
         var arr = [];
         var inCtrolTime;
         var outCtrolTime;
@@ -2360,8 +2323,9 @@ var TextExtra = function () {
             endText = TextExtra.repeat("/", startText.length);//末尾值
         }
         middleText = TextExtra.randomText(startText.length);//随机值
-        offset = offset || 0.05;//偏移时间
+        if (offset == undefined) offset = 0.05;//偏移时间
         rate = rate || 15;//帧率
+        if (mode == undefined) mode = "full";
         posterizeTime(rate);
 
         var result = "";
@@ -2376,7 +2340,8 @@ var TextExtra = function () {
                 arr.push(endText[i].charCodeAt());
             }
             else {
-                arr.push(random(33, 127));
+                if (mode == "full") arr.push(random(33, 127));
+                if (mode == "letters") arr.push(random(65, 90));
             }
         }//输出一遍ascii
         for (i = 0, l = arr.length; i < l; i++) {
@@ -2459,12 +2424,8 @@ var ExpressionSelectorExtra = function () {
         var endTime = startTime + duration;
         var retard = ExpressionSelectorExtra.direction(type, delay);
         var elapsedTime = linear(time, startTime + retard, endTime + retard, 0, duration);
-        if (mode == "in") {
-            var easing = InterpolationExtra.setEasing(easingmode, elapsedTime, 100, -100, duration);
-        }
-        if (mode == "out") {
-            var easing = InterpolationExtra.setEasing(easingmode, elapsedTime, 0, +100, duration);
-        }
+        if (mode == "in") var easing = InterpolationExtra.setEasing(easingmode, elapsedTime, 100, -100, duration);
+        if (mode == "out") var easing = InterpolationExtra.setEasing(easingmode, elapsedTime, 0, +100, duration);
         return PropertyExtra.setPropertyDimension(easing, 3);
     }
 
@@ -2474,27 +2435,15 @@ var ExpressionSelectorExtra = function () {
             seedRandom(textIndex + thisLayer.index, true);
             retard = delay * random(textTotal) + random(textTotal) * compFrameDuration;
         }
-        else if (type == "left") {
-            retard = delay * (textIndex - 1);
+        if (type == "left") retard = delay * (textIndex - 1);
+        if (type == "right") retard = delay * (textTotal - textIndex);
+        if (type == "outward") {
+            if (textIndex > Math.round((textTotal / 2) - 0.5)) retard = delay * (textIndex - 1);
+            else retard = delay * (textTotal - textIndex);
         }
-        else if (type == "right") {
-            retard = delay * (textTotal - textIndex);
-        }
-        else if (type == "outward") {
-            if (textIndex > Math.round((textTotal / 2) - 0.5)) {
-                retard = delay * (textIndex - 1);
-            }
-            else {
-                retard = delay * (textTotal - textIndex);
-            }
-        }
-        else if (type == "inward") {
-            if (textIndex < Math.round((textTotal / 2) + 0.5)) {
-                retard = delay * (textIndex - 1);
-            }
-            else {
-                retard = delay * (textTotal - textIndex);
-            }
+        if (type == "inward") {
+            if (textIndex < Math.round((textTotal / 2) + 0.5)) retard = delay * (textIndex - 1);
+            else retard = delay * (textTotal - textIndex);
         }
         return retard;
     }
