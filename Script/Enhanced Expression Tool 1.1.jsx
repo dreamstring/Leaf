@@ -121,14 +121,14 @@ var palette = (function () {
     errorGroup.alignment = ["fill", "fill"];
     errorGroup.orientation = "stack";
 
-    var errorPanel = errorGroup.add("edittext", [0, 0, 260, 150], "", { multiline: true, scrolling: false });
+    var errorPanel = errorGroup.add("edittext", [0, 0, 260, 200], "", { multiline: true, scrolling: false });
     errorPanel.orientation = "column";
     errorPanel.alignment = ["fill", "fill"];
     errorPanel.margins = 0;
     errorPanel.text = "";
     errorPanel.visible = true;
 
-    var scrollingPanel = errorGroup.add("edittext", [0, 0, 260, 150], "", { multiline: true, scrolling: true });
+    var scrollingPanel = errorGroup.add("edittext", [0, 0, 260, 200], "", { multiline: true, scrolling: true });
     scrollingPanel.orientation = "column";
     scrollingPanel.alignment = ["fill", "fill"];
     scrollingPanel.margins = 1;
@@ -287,7 +287,7 @@ var palette = (function () {
             else esButton.value = true;
         }
     }
-    (setEngineButton());
+    (setEngineButton())();
 
     esButton.onClick = jsButton.onClick = clickEvent;
     function clickEvent() {
@@ -321,13 +321,18 @@ var palette = (function () {
             return expandButton.text = "▶";
         }
         if (expandButton.text == "▶") {
-            var tempHeight = mainWindow.size[1];
+            var tempSize = mainWindow.size;
             mainWindow.addListGroup();
             mainWindow.layout.layout(1);
-            mainWindow.size[1] = tempHeight;
+            mainWindow.size = tempSize;
             mainWindow.layout.resize();
             return expandButton.text = "◁";
         }
+    }
+
+    if (!(panelGlobal instanceof Panel)) {
+        expandButton.text == "▶";
+        expandButton.onClick();
     }
 
     mainWindow.addEventListener("mouseover", setEngineButton());
