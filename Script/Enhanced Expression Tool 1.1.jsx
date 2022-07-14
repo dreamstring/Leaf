@@ -236,15 +236,9 @@ var palette = (function () {
         treeView.onDoubleClick = function () {
             selectionName = treeView.selection.toString();
             expressionStatement = expressionList[selectionName + "_Item"];
-            if (expressionStatement != undefined) {
-                addExpression(expressionStatement);
-                return;
-            }
+            if (expressionStatement != undefined) return addExpression(expressionStatement);
             expressionStatement = expressionList[selectionName + "_Node"];
-            if (expressionStatement != undefined) {
-                addExpression(expressionStatement);
-                return;
-            }
+            if (expressionStatement != undefined) return addExpression(expressionStatement);
         }
 
         //树的单击事件
