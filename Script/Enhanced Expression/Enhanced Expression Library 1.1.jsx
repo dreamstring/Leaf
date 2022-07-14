@@ -368,26 +368,29 @@ var InterpolationExtra = function () {
     //设置插值模式//
     module.setInterpolation = function (t, tMin, tMax, value1, value2, mode) {
         mode = mode || "linear";
+        t = thisLayer.clamp(t,tMin,tMax);
         if (mode == "linear") return thisLayer.linear(t, tMin, tMax, value1, value2);
         if (mode == "ease") return thisLayer.ease(t, tMin, tMax, value1, value2);
         if (mode == "easeIn") return thisLayer.easeIn(t, tMin, tMax, value1, value2);
         if (mode == "easeIOut") return thisLayer.easeOut(t, tMin, tMax, value1, value2);
+        if (mode == "easeInQuad") return __add(__mul(__mul(__sub(value2, value1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), elapsedTime), value1);
+        if (mode == "easeOutQuad") return __add(__mul(__mul(__mul(__sub(value2, value1), -1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), __sub(elapsedTime, 2)), value1);
     };
 
     //设置缓动模式//
     module.setEasing = function (mode, elapsedTime, beginValue, changeValue, duration) {
         var easingMode = {};
 
-        easingMode.linearTween = function (elapsedTime, beginValue, changeValue, duration) {
-            return changeValue * elapsedTime / duration + beginValue;
+        easingMode.linear = function (elapsedTime, beginValue, changeValue, duration) {
+            return __add(__div(__mul(changeValue,elapsedTime),duration),beginValue);
         };
 
         easingMode.easeInQuad = function (elapsedTime, beginValue, changeValue, duration) {
-            return changeValue * (elapsedTime /= duration) * elapsedTime + beginValue;
+            return __add(__mul(__mul(changeValue,(elapsedTime/= duration)),elapsedTime),beginValue);
         };
 
         easingMode.easeOutQuad = function (elapsedTime, beginValue, changeValue, duration) {
-            return -changeValue * (elapsedTime /= duration) * (elapsedTime - 2) + beginValue;
+            return __add(__mul(__mul(__mul(changeValue, -1), (elapsedTime /= duration)), __sub(elapsedTime, 2)), beginValue);
         };
 
         easingMode.easeInOutQuad = function (elapsedTime, beginValue, changeValue, duration) {
