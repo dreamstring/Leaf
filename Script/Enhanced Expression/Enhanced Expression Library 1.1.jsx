@@ -368,17 +368,24 @@ var InterpolationExtra = function () {
     //设置插值模式//
     module.setInterpolation = function (t, tMin, tMax, value1, value2, mode) {
         mode = mode || "linear";
-        t = thisLayer.clamp(t,tMin,tMax);
+        //t = thisLayer.clamp(t, tMin, tMax);
+        if(t<tMin) return value1;
+        if(t>tMax) return value2;
+        
         if (mode == "linear") return thisLayer.linear(t, tMin, tMax, value1, value2);
         if (mode == "ease") return thisLayer.ease(t, tMin, tMax, value1, value2);
         if (mode == "easeIn") return thisLayer.easeIn(t, tMin, tMax, value1, value2);
-        if (mode == "easeIOut") return thisLayer.easeOut(t, tMin, tMax, value1, value2);
+        if (mode == "easeOut") return thisLayer.easeOut(t, tMin, tMax, value1, value2);
         if (mode == "easeInQuad") return __add(__mul(__mul(__sub(value2, value1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), elapsedTime), value1);
         if (mode == "easeOutQuad") return __add(__mul(__mul(__mul(__sub(value2, value1), -1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), __sub(elapsedTime, 2)), value1);
+        if (mode == "easeInOutQuad") {
+            if ((elapsedTime = __sub(t, tMin) / __sub(tMax, tMin) * 2) < 1) return __add(__mul(__mul(__div(__sub(value2, value1), 2), elapsedTime), elapsedTime), value1);
+            return __add(__mul(__mul(__sub(value2, value1), -1 / 2), (__sub(__mul((elapsedTime -= 1), (elapsedTime - 2)), 1))), value1);
+        }
     };
 
     //设置缓动模式//
-    module.setEasing = function (mode, elapsedTime, beginValue, changeValue, duration) {
+    module.setEasing = function (mode, elapsedTime, beginValue, changeValue, duration, isDeveloperMode) {
         var easingMode = {};
 
         easingMode.linear = function (elapsedTime, beginValue, changeValue, duration) {
@@ -394,11 +401,11 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInOutQuad = function (elapsedTime, beginValue, changeValue, duration) {
-            if ((elapsedTime /= duration / 2) < 1) return changeValue / 2 * elapsedTime * elapsedTime + beginValue;
-            return -changeValue / 2 * ((--elapsedTime) * (elapsedTime - 2) - 1) + beginValue;
+            if ((elapsedTime /= duration / 2) < 1) return __add(__mul(__mul(__div(changeValue, 2), elapsedTime), elapsedTime), beginValue);
+            return __add(__mul(__div(changeValue, -2), (__sub(__mul((elapsedTime -= 1), (elapsedTime - 2)), 1))), beginValue);
         };
 
-        easingMode.easeInCubic = function (elapsedTime, beginValue, changeValue, duration) {
+        /*easingMode.easeInCubic = function (elapsedTime, beginValue, changeValue, duration) {
             return changeValue * Math.pow(elapsedTime / duration, 3) + beginValue;
         };
 
@@ -544,8 +551,9 @@ var InterpolationExtra = function () {
             else var s = period / (2 * Math.PI) * Math.asin(changeValue / amplitude);
             if (elapsedTime < 1) return -0.5 * (amplitude * Math.pow(2, 10 * (elapsedTime -= 1)) * Math.sin((elapsedTime * duration - s) * (2 * Math.PI) / period)) + beginValue;
             return amplitude * Math.pow(2, -10 * (elapsedTime -= 1)) * Math.sin((elapsedTime * duration - s) * (2 * Math.PI) / period) * 0.5 + changeValue + beginValue;
-        };
+        };*/
 
+        if(isDeveloperMode) return easingMode;
         return easingMode[mode](elapsedTime, beginValue, changeValue, duration);
     }
 
@@ -2485,4 +2493,23 @@ var syntacticSugar = function () {
             thisProperty[key] = targetClass[key];
         }
     }
+
+    var easingmodeArray = [];
+    for (key in InterpolationExtra.setEasing(undefined, undefined, undefined, undefined, undefined, true)) {
+        easingmodeArray.push(key.toString());
+    }
+    
+    for (i = 0, l = easingmodeArray.length; i < l; i++) {
+        key = easingmodeArray[i];
+        if(key.toString() == "linear") break;
+        if(key.toString() == "ease") break;
+        if(key.toString() == "easeIn") break;
+        if(key.toString() == "easeOut") break;
+        thisProperty[key] = function () {
+            var parameter = Array.prototype.slice.apply(arguments);
+            parameter.push(key.toString());
+            return InterpolationExtra.setInterpolation(parameter);
+        }
+    }
+
 }()
