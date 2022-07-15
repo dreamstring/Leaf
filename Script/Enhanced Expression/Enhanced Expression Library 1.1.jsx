@@ -763,7 +763,7 @@ var LayerExtra = function () {
         var childLayer = targetLayer;
         while (childLayer.hasParent) childLayer = childLayer.parent;
         var parentLayer = childLayer;
-        return targetLayer.toWorld(parentLayer.transform.anchorPoint);
+        return targetLayer.toWorld(parentLayer.transform.anchorPoint.value);
     }
 
     //设置属性父级(时间)//
