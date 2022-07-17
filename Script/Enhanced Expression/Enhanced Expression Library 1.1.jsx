@@ -366,34 +366,68 @@ var InterpolationExtra = function () {
     var module = {};
 
     //设置插值模式//
-    module.setInterpolation = function (t, tMin, tMax, value1, value2, mode) {
+    module.setInterpolation = function (t, tMin, tMax, value1, value2, mode, isDeveloperMode) {
         mode = mode || "linear";
-        //t = thisLayer.clamp(t, tMin, tMax);
-        if(t<tMin) return value1;
-        if(t>tMax) return value2;
-        
-        if (mode == "linear") return thisLayer.linear(t, tMin, tMax, value1, value2);
-        if (mode == "ease") return thisLayer.ease(t, tMin, tMax, value1, value2);
-        if (mode == "easeIn") return thisLayer.easeIn(t, tMin, tMax, value1, value2);
-        if (mode == "easeOut") return thisLayer.easeOut(t, tMin, tMax, value1, value2);
-        if (mode == "easeInQuad") return __add(__mul(__mul(__sub(value2, value1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), elapsedTime), value1);
-        if (mode == "easeOutQuad") return __add(__mul(__mul(__mul(__sub(value2, value1), -1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), __sub(elapsedTime, 2)), value1);
-        if (mode == "easeInOutQuad") {
+        if (isDeveloperMode == undefined) isDeveloperMode = false;
+        var interpolation = {};
+
+        interpolation.linear = clampTime(function (t, tMin, tMax, value1, value2) {
+            return thisLayer.linear(t, tMin, tMax, value1, value2);
+        });
+
+        interpolation.ease = clampTime(function (t, tMin, tMax, value1, value2) {
+            return thisLayer.ease(t, tMin, tMax, value1, value2);
+        });
+
+        interpolation.easeIn = clampTime(function (t, tMin, tMax, value1, value2) {
+            return thisLayer.easeIn(t, tMin, tMax, value1, value2);
+        });
+
+        interpolation.easeOut = clampTime(function (t, tMin, tMax, value1, value2) {
+            return thisLayer.easeOut(t, tMin, tMax, value1, value2);
+        });
+
+        interpolation.easeInQuad = clampTime(function (t, tMin, tMax, value1, value2) {
+            return __add(__mul(__mul(__sub(value2, value1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), elapsedTime), value1);
+        });
+
+        interpolation.easeOutQuad = clampTime(function (t, tMin, tMax, value1, value2) {
+            return __add(__mul(__mul(__mul(__sub(value2, value1), -1), elapsedTime = __sub(t, tMin) / __sub(tMax, tMin)), __sub(elapsedTime, 2)), value1);
+        });
+
+        interpolation.easeInOutQuad = clampTime(function (t, tMin, tMax, value1, value2) {
             if ((elapsedTime = __sub(t, tMin) / __sub(tMax, tMin) * 2) < 1) return __add(__mul(__mul(__div(__sub(value2, value1), 2), elapsedTime), elapsedTime), value1);
             return __add(__mul(__mul(__sub(value2, value1), -1 / 2), (__sub(__mul((elapsedTime -= 1), (elapsedTime - 2)), 1))), value1);
+        });
+
+        interpolation.easeInCubic = clampTime(function (t, tMin, tMax, value1, value2) {
+            return __add(__mul(__sub(value2, value1), Math.pow(__sub(t, tMin) / __sub(tMax, tMin), 3)), value1);
+        });
+
+
+
+        function clampTime(callback) {
+            return function (t, tMin, tMax, value1, value2) {
+                return callback(thisLayer.clamp(t, tMin, tMax), tMin, tMax, value1, value2);
+            };
         }
+
+        if (isDeveloperMode) return interpolation;
+        return interpolation[mode](t, tMin, tMax, value1, value2);
     };
 
+  
+
     //设置缓动模式//
-    module.setEasing = function (mode, elapsedTime, beginValue, changeValue, duration, isDeveloperMode) {
+    module.setEasing = function (mode, elapsedTime, beginValue, changeValue, duration) {
         var easingMode = {};
 
         easingMode.linear = function (elapsedTime, beginValue, changeValue, duration) {
-            return __add(__div(__mul(changeValue,elapsedTime),duration),beginValue);
+            return __add(__div(__mul(changeValue, elapsedTime), duration), beginValue);
         };
 
         easingMode.easeInQuad = function (elapsedTime, beginValue, changeValue, duration) {
-            return __add(__mul(__mul(changeValue,(elapsedTime/= duration)),elapsedTime),beginValue);
+            return __add(__mul(__mul(changeValue, (elapsedTime /= duration)), elapsedTime), beginValue);
         };
 
         easingMode.easeOutQuad = function (elapsedTime, beginValue, changeValue, duration) {
@@ -405,11 +439,11 @@ var InterpolationExtra = function () {
             return __add(__mul(__div(changeValue, -2), (__sub(__mul((elapsedTime -= 1), (elapsedTime - 2)), 1))), beginValue);
         };
 
-        /*easingMode.easeInCubic = function (elapsedTime, beginValue, changeValue, duration) {
-            return changeValue * Math.pow(elapsedTime / duration, 3) + beginValue;
+        easingMode.easeInCubic = function (elapsedTime, beginValue, changeValue, duration) {
+            return __add(__mul(changeValue,Math.pow(elapsedTime / duration, 3)),beginValue);
         };
 
-        easingMode.easeOutCubic = function (elapsedTime, beginValue, changeValue, duration) {
+        /*easingMode.easeOutCubic = function (elapsedTime, beginValue, changeValue, duration) {
             return changeValue * (Math.pow(elapsedTime / duration - 1, 3) + 1) + beginValue;
         };
 
@@ -553,7 +587,6 @@ var InterpolationExtra = function () {
             return amplitude * Math.pow(2, -10 * (elapsedTime -= 1)) * Math.sin((elapsedTime * duration - s) * (2 * Math.PI) / period) * 0.5 + changeValue + beginValue;
         };*/
 
-        if(isDeveloperMode) return easingMode;
         return easingMode[mode](elapsedTime, beginValue, changeValue, duration);
     }
 
@@ -2494,22 +2527,12 @@ var syntacticSugar = function () {
         }
     }
 
-    var easingmodeArray = [];
-    for (key in InterpolationExtra.setEasing(undefined, undefined, undefined, undefined, undefined, true)) {
-        easingmodeArray.push(key.toString());
-    }
-    
-    for (i = 0, l = easingmodeArray.length; i < l; i++) {
-        key = easingmodeArray[i];
-        if(key.toString() == "linear") break;
-        if(key.toString() == "ease") break;
-        if(key.toString() == "easeIn") break;
-        if(key.toString() == "easeOut") break;
-        thisProperty[key] = function () {
-            var parameter = Array.prototype.slice.apply(arguments);
-            parameter.push(key.toString());
-            return InterpolationExtra.setInterpolation(parameter);
-        }
+    for (key in InterpolationExtra.setInterpolation(undefined, undefined, undefined, undefined, undefined, undefined, true)) {
+        if (key.toString() == "linear") continue;
+        if (key.toString() == "ease") continue;
+        if (key.toString() == "easeIn") continue;
+        if (key.toString() == "easeOut") continue;
+        thisLayer[key] = InterpolationExtra.setInterpolation(undefined, undefined, undefined, undefined, undefined, undefined, true)[key];
     }
 
 }()
