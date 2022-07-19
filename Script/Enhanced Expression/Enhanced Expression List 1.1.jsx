@@ -36,7 +36,7 @@ var expressionList = {
     //--- 矢量数学 ---//
     "矢量数学_Node": "VectorMathExtra",
     "getCircleParameter_Item": "VectorMathExtra.getCircleParameter(tangent1, tangent2, position1, position2)",
-    "pointsWiggle_Item": "VectorMathExtra.pointsWiggle(freq, amp, octaves)",
+    "pointsWiggle_Item": "VectorMathExtra.pointsWiggle(freq = 6.0, amp = 20.0, octaves = 3.0)",
     "getAnglesBetweenPoints_Item": "VectorMathExtra.getAnglesBetweenPoints(originPoints)",
     "getDistancesBetweenPoints_Item": "VectorMathExtra.getDistancesBetweenPoints(originPoints)",
     "multiply_Item": "VectorMathExtra.multiply(array1, array2)",
