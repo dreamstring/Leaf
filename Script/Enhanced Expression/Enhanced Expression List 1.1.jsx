@@ -9,7 +9,7 @@ var expressionList = {
     "compEndTime_Item": "compEndTime",
     "compWidth_Item": "compWidth",
     "compHeight_Item": "compHeight",
-    "compSize_Item":"compSize",
+    "compSize_Item": "compSize",
     "timeCode_Item": "timeCode",
     "timeEpsilon_Item": "timeEpsilon",
     "nativeCode_Item": "nativeCode",
@@ -36,6 +36,7 @@ var expressionList = {
     //--- 矢量数学 ---//
     "矢量数学_Node": "VectorMathExtra",
     "getCircleParameter_Item": "VectorMathExtra.getCircleParameter(tangent1, tangent2, position1, position2)",
+    "pointsWiggle_Item": "VectorMathExtra.pointsWiggle(freq, amp, octaves)",
     "getAnglesBetweenPoints_Item": "VectorMathExtra.getAnglesBetweenPoints(originPoints)",
     "getDistancesBetweenPoints_Item": "VectorMathExtra.getDistancesBetweenPoints(originPoints)",
     "multiply_Item": "VectorMathExtra.multiply(array1, array2)",
@@ -71,8 +72,8 @@ var expressionList = {
     //--- 图层 ---//
     "图层_Node": "LayerExtra",
     "setAnchor_Item": "LayerExtra.setAnchor(xAlignment = \"center\", yAlignment = \"center\")",
-    "getLayerSize_Item":"LayerExtra.getLayerSize(targetLayer, targetTime)",
-    "scaleToFitSize_Item":"LayerExtra.scaleToFitSize(originSize, targetSize)",
+    "getLayerSize_Item": "LayerExtra.getLayerSize(targetLayer, targetTime)",
+    "scaleToFitSize_Item": "LayerExtra.scaleToFitSize(originSize, targetSize)",
     "fontSwitching_Item": "LayerExtra.fontSwitching(sliderControl, targetComp)",
     "getChildTruePosition_Item": "LayerExtra.getChildTruePosition(targetLayer)",
     "setParentPropertyAtTime_Item": "LayerExtra.setParentPropertyAtTime(targetLayer, delayFrame = 0, mode = \"separate\")",
@@ -115,7 +116,7 @@ var expressionList = {
     "exponent_Item": "KeyExtra.exponent()",
     "squareShake_Item": "KeyExtra.squareShake(angle = 45, shakeDistance = 100, num = 5, mode = 0)",
     "setKeyCurves_Item": "KeyExtra.setKeyCurves(easingmode, type)",
-    "setKeyCurvesByBezier_Item":"KeyExtra.setKeyCurvesByBezier(shapeValue, type)",
+    "setKeyCurvesByBezier_Item": "KeyExtra.setKeyCurvesByBezier(shapeValue, type)",
     //--- 标记关键帧 ---//
     "标记关键帧_Node": "MarkerKeyExtra",
     "getMarkerParameter_Item": "MarkerKeyExtra.getMarkerParameter(type = \"last\", targetLayerOrComp = thisLayer, offsetIndex = 0)",
@@ -146,7 +147,7 @@ var expressionList = {
     "flattenCubicBezier_Item": "BezierExtra.flattenCubicBezier(p1, cp1, cp2, p2, precision)",
     "isStraightLine_Item": "BezierExtra.isStraightLine(p1, cp1, cp2, p2)",
     "toBezierFormat_Item": "BezierExtra.toBezierFormat(shapeValue)",
-    "customBezier_Item":"BezierExtra.customBezier(t, tMin, tMax, value1, value2, bezierPoints)",
+    "customBezier_Item": "BezierExtra.customBezier(t, tMin, tMax, value1, value2, bezierPoints)",
     //--- Text ---//
     "文本_Node": "TextExtra",
     "textRandomShuffle_Item": "TextExtra.textRandomShuffle(rate = 15, sliderControl = 0)",
@@ -351,6 +352,15 @@ var helptipList = {
         + "\n返回:对象(Object)。"
         + "\n  1.R:圆的半径长。"
         + "\n  2.center:圆心坐标。",
+    "pointsWiggle": "pointsWiggle( )"
+        + "\n"
+        + "\n全名:VectorMathExtra.pointsWiggle(freq, amp, octaves)"
+        + "\n说明:顶点摆动函数,路径的每个顶点分别摆动,呈波形变化。"
+        + "\n参数:"
+        + "\n  1.freq:频率,即每秒随机变化的次数,未定义时默认为6.0。"
+        + "\n  2.amp:振幅,即随机抖动位置移动的大小,未定义时默认为20.0。"
+        + "\n  3.octaves : 阶度,参数越大分型越细致,未定义时默认为3.0。"
+        + "\n返回:对象(Object)或者函数(Function),具体为路径属性。",
     "getAnglesBetweenPoints": "getAnglesBetweenPoints( )"
         + "\n"
         + "\n全名:VectorMathExtra.getAnglesBetweenPoints(originPoints)"

@@ -177,6 +177,19 @@ var VectorMathExtra = function () {
         };
     };
 
+    //顶点抖动//
+    module.pointsWiggle = function (freq, amp, octaves) {
+        var points = thisProperty.points();
+        var inTangents = thisProperty.inTangents();
+        var outTangents = thisProperty.outTangents();
+        var isClosed = thisProperty.isClosed();
+        var finalPoint = Array();
+        points.forEach(function (point) {
+            return finalPoint.push(point.waveWiggleTemp(freq, amp, octaves));
+        })
+        return thisProperty.createPath(finalPoint, inTangents, outTangents, isClosed);
+    }
+
     //获取点集相邻点的斜率角//
     module.getAnglesBetweenPoints = function (originPoints) {
         var slopeAngle, angle, point1, point2;
@@ -416,7 +429,7 @@ var InterpolationExtra = function () {
         return interpolation[mode](t, tMin, tMax, value1, value2);
     };
 
-  
+
 
     //设置缓动模式//
     module.setEasing = function (mode, elapsedTime, beginValue, changeValue, duration) {
@@ -440,7 +453,7 @@ var InterpolationExtra = function () {
         };
 
         easingMode.easeInCubic = function (elapsedTime, beginValue, changeValue, duration) {
-            return __add(__mul(changeValue,Math.pow(elapsedTime / duration, 3)),beginValue);
+            return __add(__mul(changeValue, Math.pow(elapsedTime / duration, 3)), beginValue);
         };
 
         /*easingMode.easeOutCubic = function (elapsedTime, beginValue, changeValue, duration) {
@@ -1126,7 +1139,7 @@ var PathPropertyExtra = function () {
             pointAtTime = PropertyExtra.valueAtFrame(targetPosition, i);
             newPoint.push(sub(pointAtTime, offset));
         }
-        return frames >= inFrame && frames < outFrame ? createPath(newPoint, [], [], false) : thisProperty;
+        return frames >= inFrame && frames < outFrame ? thisProperty.createPath(newPoint, [], [], false) : thisProperty;
     }
 
     //滚动函数//
@@ -1202,7 +1215,7 @@ var PathPropertyExtra = function () {
                 return newPathPoint(point, secondPath[property]()[index]);
             });
         }
-        return createPath(newPathValue("points"), newPathValue("inTangents"), newPathValue("outTangents"), true);
+        return thisProperty.createPath(newPathValue("points"), newPathValue("inTangents"), newPathValue("outTangents"), true);
     }
 
     return module;
@@ -2535,4 +2548,34 @@ var syntacticSugar = function () {
         thisLayer[key] = InterpolationExtra.setInterpolation(undefined, undefined, undefined, undefined, undefined, undefined, true)[key];
     }
 
+}()
+
+//--- Hidden ---//
+var hidden = function () {
+    Array.prototype.forEach = function (func) {
+        var arr = this;
+        for (var i = 0; i < arr.length; i++) {
+            func(arr[i], i, arr);
+        }
+    }
+
+    var waveIndex = 1;
+    Array.prototype.waveWiggleTemp = function (freq, amp, octaves) {
+        var arr = this;
+        freq = freq || 6.0;
+        amp = amp || 20.0;
+        octaves = octaves = 3.0;
+
+        function wave() {
+            var result = 0;
+            seedRandom(waveIndex++, true);
+            for (var index = 1, l = octaves; index <= l; index++) {
+                var randomValue = random(0, 100);
+                var sin = (Math.sin((time * freq) / index + randomValue) * amp) / index;
+                result += sin;
+            }
+            return result;
+        }
+        return thisLayer.add(PropertyExtra.setPropertyByDimension(arr, wave), arr);
+    }
 }()
