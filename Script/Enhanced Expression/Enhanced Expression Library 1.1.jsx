@@ -2552,11 +2552,22 @@ var syntacticSugar = function () {
 
 //--- Hidden ---//
 var hidden = function () {
+
     Array.prototype.forEach = function (func) {
         var arr = this;
         for (var i = 0; i < arr.length; i++) {
             func(arr[i], i, arr);
         }
+    }
+
+    Array.prototype.map = function (func, context) {
+        var arr = this;
+        var temp = [];
+        for (var i = 0; i < arr.length; i++) {
+            var result = func.call(context, arr[i], i, arr);
+            temp.push(result);
+        }
+        return temp;
     }
 
     var waveIndex = 1;
@@ -2578,4 +2589,6 @@ var hidden = function () {
         }
         return thisLayer.add(PropertyExtra.setPropertyByDimension(arr, wave), arr);
     }
+
 }()
+

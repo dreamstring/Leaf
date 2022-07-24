@@ -121,14 +121,14 @@ var palette = (function () {
     errorGroup.alignment = ["fill", "fill"];
     errorGroup.orientation = "stack";
 
-    var errorPanel = errorGroup.add("edittext", [0, 0, 260, 200], "", { multiline: true, scrolling: false });
+    var errorPanel = errorGroup.add("edittext", [0, 0, 260, 220], "", { multiline: true, scrolling: false });
     errorPanel.orientation = "column";
     errorPanel.alignment = ["fill", "fill"];
     errorPanel.margins = 0;
     errorPanel.text = "";
     errorPanel.visible = true;
 
-    var scrollingPanel = errorGroup.add("edittext", [0, 0, 260, 200], "", { multiline: true, scrolling: true });
+    var scrollingPanel = errorGroup.add("edittext", [0, 0, 260, 220], "", { multiline: true, scrolling: true });
     scrollingPanel.orientation = "column";
     scrollingPanel.alignment = ["fill", "fill"];
     scrollingPanel.margins = 1;
@@ -381,9 +381,20 @@ var palette = (function () {
 
     helpButton.onClick = function () {
         var keyboardState = ScriptUI.environment.keyboardState;
-        if (keyboardState.ctrlKey) return File(getPreferencespath()).execute();
-        if (keyboardState.shiftKey) return Folder(resourceFolderPath).execute();
-        if (keyboardState.altKey) return errorPanel.text = readTxt(File(identifierstxt));
+        if (keyboardState.ctrlKey) return (function(){
+            File(getPreferencespath()).execute();
+            errorPanel.text = "请在AE关闭后找到Identifiers或Keywords修改并保存txt文件。\n重新启动AE即可实现表达式提示词的添加。";
+        })()
+        if (keyboardState.shiftKey) return (function(){
+            Folder(resourceFolderPath).execute();
+            errorPanel.text = "已打开库路径文件夹。";
+        })()
+        
+        if (keyboardState.altKey) return (function(){
+            var txt = trimString(readTxt(File(identifierstxt)).toString());
+            sendToClipboard(txt);
+            errorPanel.text = txt;
+        })()
         var settingWindow = getWindow();
         settingWindow.alignment = ["center", "center"];
         settingWindow.orientation = "column";
@@ -735,6 +746,7 @@ function createIdentifiersList(filename, resourceFolderPath) {
     for (key in expressionList) {
         str += getIdentifiersList(expressionList, key);
     }
+    str += "easeInQuad() " + "easeOutQuad() " + "easeInOutQuad()";
     var myFile = new File(resourceFolderPath + "/" + filename + ".txt");
     if (!isSecurityPrefSet()) {
         alert("此脚本需要访问权限才能写入文件。转到应用程序首选项的“常规”面板，确保选中“允许脚本写入文件和访问网络”。");
@@ -817,6 +829,10 @@ function readTxt(txtFile) {
     return txtArray;
 }
 
+function trimString(str){
+    return str.replace(/(^\s*)|(\s*$)/g,"");
+}
+
 function folderMatch(resourceFolderPath, regexp) {
     var files = Folder(resourceFolderPath).getFiles();//资源文件
     for (var i = files.length - 1; i >= 0; i--) {
@@ -832,4 +848,21 @@ function folderMatch(resourceFolderPath, regexp) {
 function getVersion(fileName, name) {
     str = fileName.slice(name.length, fileName.length - 4);
     return str.replace(/(^\s*)|(\s*$)/g, "");
+}
+
+function sendToClipboard(info) {
+    var cmd, isWindows;
+
+    // 判断是不是字符串
+    info = typeof info === "string" ? info : info.toString();
+    var isWindows = $.os.indexOf("Windows") !== -1;
+
+    //mac的命令
+    var cmd = 'echo "' + info + '" | pbcopy';
+    //windows的命令
+    if (isWindows) {
+        cmd = 'cmd.exe /c cmd.exe /c "echo ' + info + ' | clip"';
+    }
+
+    system.callSystem(cmd);
 }
