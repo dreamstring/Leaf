@@ -633,7 +633,7 @@ var palette = (function () {
         var selCompID = app.project.item(indexOfComp(myComp.name)).id;
         var thisFile = app.project.file;
         if (!thisFile) {
-            var projectFile = new File(Folder.desktop.fsName.replace("\\", "/") + "/Temporary Folder" + "/test " + getFormatTime() + ".aep");
+            var projectFile = new File(Folder('~/Documents').fsName.replace("\\", "/") + "/Temporary Folder" + "/test " + getFormatTime() + ".aep");
             projectFileFolderPath = projectFile.path;
             projectFileFolder = Folder(projectFileFolderPath);
             if (!projectFileFolderPath.exist) {
