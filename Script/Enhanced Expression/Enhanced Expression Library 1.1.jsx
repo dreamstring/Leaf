@@ -1239,23 +1239,20 @@ var PropertyExtra = function () {
         amp = amp || 10.0;//幅度
         var octaves = 1.0; //随机噪波
         var ampMult = 0.5; //细节
-        var targetProperty = thisProperty; //循环属性
+        var targetProperty = thisProperty; //循环属性 
         if (targetProperty.numKeys > 1) {
             //当有关键帧的时候，在关键帧周期内循环
             var firstKeyTime = targetProperty.key(1).time;
             var lastKeyTime = targetProperty.key(targetProperty.numKeys).time;
             toggles.loopTime = lastKeyTime - firstKeyTime; //wiggle的循环周期
         }
-        else {
-            //当没有关键帧的时候，自定义循环周期
-            var firstKeyTime = 0;
-        }
+        else var firstKeyTime = 0;//当没有关键帧的时候，自定义循环周期
         var elapsedTime = thisLayer.time % toggles.loopTime; //除以循环周期
         var wiggle1 = wiggle(freq, amp, octaves, ampMult, elapsedTime + firstKeyTime); //第一个wiggle
         var wiggle2 = wiggle(freq, amp, octaves, ampMult, elapsedTime - toggles.loopTime + firstKeyTime); //第二个wiggle
         if (targetProperty.numKeys > 1) {
             //当有关键帧的时候，在关键帧周期内循环
-            return thisLayer.linear(elapsedTime, 0, toggles.loopTime, thisLayer.add(wiggle1, loopOut(toggles.type)), thisLayer.add(wiggle2, loopOut(toggles.type))); - value;
+            return thisLayer.linear(elapsedTime, 0, toggles.loopTime, thisLayer.add(wiggle1, loopOut(toggles.type)), thisLayer.add(wiggle2, loopOut(toggles.type)));
         }
         else {
             //当没有关键帧的时候，自定义循环周期
@@ -1298,9 +1295,7 @@ var PropertyExtra = function () {
             var stopResult = add(thisProperty.value, mul(velocityVector, thisTime - maxTime - timeEpsilon));
             var finalResult = (thisLayer.time < maxTime) ? thisProperty.value : stopResult;
         }
-        else {
-            finalResult = thisProperty.value;
-        }
+        else finalResult = thisProperty.value;
         return finalResult;
     }
 
@@ -1313,12 +1308,8 @@ var PropertyExtra = function () {
             var startTime = thisProperty.key(1).time;
             var endTime = thisProperty.key(num).time;
             var loopTime = thisLayer.time;
-            if (mode == "in") {
-                loopTime = thisLayer.clamp(thisLayer.time, compStartTime, endTime);
-            }
-            if (mode == "out") {
-                loopTime = thisLayer.clamp(thisLayer.time, startTime, compEndTime);
-            }
+            if (mode == "in") loopTime = thisLayer.clamp(thisLayer.time, compStartTime, endTime);
+            if (mode == "out") loopTime = thisLayer.clamp(thisLayer.time, startTime, compEndTime);
             var elapsedTime = loopTime - startTime;
             var trueDuration = (endTime - startTime);
             var timeRemainder = MathExtra.getRemainder(elapsedTime, trueDuration);
@@ -1328,9 +1319,7 @@ var PropertyExtra = function () {
             var finalTime = t + startTime;
             return thisProperty.valueAtTime(finalTime);
         }
-        else {
-            return thisProperty.value;
-        }
+        else return thisProperty.value;
     }
 
     //帧上的万能循环//
@@ -1342,12 +1331,8 @@ var PropertyExtra = function () {
             var startFrame = KeyExtra.getKeyParameter(undefined, thisProperty, 1).frame;
             var endFrame = KeyExtra.getKeyParameter(undefined, thisProperty, "num").frame;
             var loopFrame = frames;
-            if (mode == "in") {
-                loopFrame = thisLayer.clamp(frames, thisLayer.timeToFrames(compStartTime), endFrame);
-            }
-            if (mode == "out") {
-                loopFrame = thisLayer.clamp(thisLayer.time, startFrame, thisLayer.timeToFrames(compEndTime));
-            }
+            if (mode == "in") loopFrame = thisLayer.clamp(frames, thisLayer.timeToFrames(compStartTime), endFrame);
+            if (mode == "out") loopFrame = thisLayer.clamp(thisLayer.time, startFrame, thisLayer.timeToFrames(compEndTime));
             var elapsedFrame = loopFrame - startFrame;
             var trueDuration = (endFrame - startFrame);
             var timeRemainder = MathExtra.getRemainder(elapsedFrame, trueDuration);
@@ -1357,9 +1342,7 @@ var PropertyExtra = function () {
             var finalFrame = t + startFrame;
             return PropertyExtra.valueAtFrame(thisProperty, finalFrame);
         }
-        else {
-            return thisProperty.value;
-        }
+        else return thisProperty.value;
     }
 
     //默认万能循环//
@@ -1404,14 +1387,10 @@ var PropertyExtra = function () {
         var midValue = PropertyExtra.valueAtFrame(targetProperty, midFrame); //在中间帧下的值
         var precision = 1; //精度是一帧
         //如果二分还没结束
-        if (targetValue < midValue && inFrame + precision < outFrame) {
-            //小于中间值去更大的区间寻找
+        if (targetValue < midValue && inFrame + precision < outFrame) //小于中间值去更大的区间寻找
             return PropertyExtra.frameDichotomousComparision(inFrame, midFrame, lowValue, midValue, targetProperty, targetValue);
-        }
-        else if (targetValue > midValue && inFrame + precision < outFrame) {
-            //大于中间值去更小的区间寻找
+        else if (targetValue > midValue && inFrame + precision < outFrame) //大于中间值去更小的区间寻找
             return PropertyExtra.frameDichotomousComparision(midFrame, outFrame, midValue, highValue, targetProperty, targetValue);
-        }
         else {
             //如果二分结束，找到最符合的值
             function getMidFrame(frame1, frame2) {
@@ -1432,14 +1411,10 @@ var PropertyExtra = function () {
         var midValue = targetProperty.valueAtTime(midTime); //在中间时间下的值
         var precision = thisComp.frameDuration; //精度是0.05秒
         //如果二分还没结束
-        if (targetValue < midValue && inTime + precision < outTime) {
-            //小于中间值去更大的区间寻找
+        if (targetValue < midValue && inTime + precision < outTime) //小于中间值去更大的区间寻找
             return PropertyExtra.timeDichotomousComparision(inTime, midTime, lowValue, midValue, targetProperty, targetValue);
-        }
-        else if (targetValue > midValue && inTime + precision < outTime) {
-            //大于中间值去更小的区间寻找
+        else if (targetValue > midValue && inTime + precision < outTime) //大于中间值去更小的区间寻找
             return PropertyExtra.timeDichotomousComparision(midTime, outTime, midValue, highValue, targetProperty, targetValue);
-        }
         else {
             //如果二分结束，找到最符合的值
             function getMidTime(time1, time2) {
@@ -1474,21 +1449,15 @@ var PropertyExtra = function () {
         var dimension;
         if (targetProperty.value) targetProperty = targetProperty.value;
         if (!targetProperty) return dimension = 0;
-        if (typeof targetProperty == "number") {
-            dimension = 1;
-        }
-        else {
-            dimension = targetProperty.length;
-        }
+        if (typeof targetProperty == "number") dimension = 1;
+        else dimension = targetProperty.length;
         return dimension;
     }
 
     //设置属性维度//
     module.setPropertyDimension = function (originalData, num) {
         var finalData = [];
-        for (i = 0, l = num; i < l; i++) {
-            finalData.push(originalData);
-        }
+        for (i = 0, l = num; i < l; i++) finalData.push(originalData);
         return finalData;
     }
 
@@ -1496,9 +1465,7 @@ var PropertyExtra = function () {
     module.setPropertyByDimension = function (targetProperty, expressionFormula) {
         var dimension = PropertyExtra.getPropertyDimension(targetProperty);
         var finalResult = Array(dimension);
-        for (i = 0, l = dimension; i < l; i++) {
-            finalResult[i] = expressionFormula(i);
-        }
+        for (i = 0, l = dimension; i < l; i++) finalResult[i] = expressionFormula(i);
         return finalResult;
     }
 
@@ -1517,12 +1484,8 @@ var KeyExtra = function () {
         //关键帧总数
         var keyNumber = targetProperty.numKeys;
         //偏移索引数
-        if (!isNaN(offsetIndex) || offsetIndex == "num") {
-            offsetIndex = (!isNaN(offsetIndex)) ? Number(offsetIndex) : keyNumber;
-        }
-        else {
-            offsetIndex = offsetIndex || 0;
-        }
+        if (!isNaN(offsetIndex) || offsetIndex == "num") offsetIndex = (!isNaN(offsetIndex)) ? Number(offsetIndex) : keyNumber;
+        else offsetIndex = offsetIndex || 0;
         //图层信息
         var targetLayer = PropertyExtra.getLayerObject(targetProperty);
         var inTime = targetLayer.inPoint;
@@ -1536,22 +1499,12 @@ var KeyExtra = function () {
         var indexList = { last: lastKeyIndex, next: nextKeyIndex, nesrest: nearestKeyIndex, undefined: 0 };
         //关键帧索引
         var keyIndex = indexList[type] + offsetIndex;
-        if (keyIndex <= 0) {
-            keyIndex = 0;
-        }
-        if (keyIndex > keyNumber) {
-            keyIndex = keyNumber + 1;
-        }
+        if (keyIndex <= 0) keyIndex = 0;
+        if (keyIndex > keyNumber) keyIndex = keyNumber + 1;
         //关键帧时间
-        if (keyIndex <= 0) {
-            keyTime = inTime;
-        }
-        if (keyIndex > keyNumber) {
-            keyTime = outTime;
-        }
-        if (keyIndex > 0 && keyIndex <= keyNumber) {
-            keyTime = targetProperty.key(keyIndex).time;
-        }
+        if (keyIndex <= 0) keyTime = inTime;
+        if (keyIndex > keyNumber) keyTime = outTime;
+        if (keyIndex > 0 && keyIndex <= keyNumber) keyTime = targetProperty.key(keyIndex).time;
         //关键帧值
         keyValue = keyIndex > 0 && keyIndex <= keyNumber ? targetProperty.key(keyIndex).value : targetProperty.valueAtTime(keyTime);
         return {
@@ -1578,9 +1531,7 @@ var KeyExtra = function () {
             var circularMotion = thisLayer.mul(velocity, amp * Math.sin(freq * keyTime * 2 * Math.PI));
             return thisLayer.add(value, thisLayer.div(circularMotion, exp));
         }
-        else {
-            return value;
-        }
+        else return value;
     }
 
     //平滑的弹性表达式//
@@ -1596,15 +1547,10 @@ var KeyExtra = function () {
             var sin1 = Math.sin(freq * keyTime * 2 * Math.PI);
             var decay = -1 * Math.pow(Math.E * keyTime, 2);
             var sin2 = Math.pow(Math.E, decay);
-            if (decayDuration == 0) {
-                return thisLayer.add(value, thisLayer.mul(velocity, amp / 100 * sin1 * sin2));
-            } else {
-                return thisLayer.add(value, thisLayer.mul(velocity, amp / 100 * sin1 * sin2 * Math.max(decayDuration - keyTime, 0)));
-            }
+            if (decayDuration == 0) return thisLayer.add(value, thisLayer.mul(velocity, amp / 100 * sin1 * sin2));
+            else return thisLayer.add(value, thisLayer.mul(velocity, amp / 100 * sin1 * sin2 * Math.max(decayDuration - keyTime, 0)));
         }
-        else {
-            return value;
-        }
+        else return value;
     }
 
     //反弹表达式//
@@ -1618,12 +1564,8 @@ var KeyExtra = function () {
         if (lastKeyIndex > 0) {
             var velocityValue = thisLayer.mul(thisProperty.velocityAtTime(lastKeyTime - timeEpsilon), -elasticity);
             var velocityLength = thisLayer.length(velocityValue);
-            if (value instanceof Array) {
-                var direction = velocityLength > 0 ? thisLayer.normalize(velocityValue) : [0, 0, 0];
-            }
-            else {
-                var direction = velocityValue < 0 ? -1 : 1;
-            }
+            if (value instanceof Array) var direction = velocityLength > 0 ? thisLayer.normalize(velocityValue) : [0, 0, 0];
+            else var direction = velocityValue < 0 ? -1 : 1;
             var tCur = 0;
             var segDur = thisLayer.mul(velocityLength, 2 / (gravity * 1000));
             var tNext = segDur;
@@ -1638,9 +1580,8 @@ var KeyExtra = function () {
             if (bouncesNumber <= nMax) {
                 delta = keyTime - tCur;
                 return thisLayer.add(value, thisLayer.mul(direction, delta * (velocityLength - gravity * 1000 * delta / 2)));
-            } else {
-                return value;
             }
+            else return value;
         }
         else return value;
     }
@@ -1652,12 +1593,8 @@ var KeyExtra = function () {
             var nextKey = KeyExtra.getKeyParameter("next", thisProperty);
             var lastKeyComponent = lastKey.value[i];
             var nextKeyComponent = nextKey.value[i];
-            if (lastKeyComponent == 0) {
-                lastKeyComponent = timeEpsilon;
-            }
-            if (nextKeyComponent == 0) {
-                nextKeyComponent = timeEpsilon;
-            }
+            if (lastKeyComponent == 0) lastKeyComponent = timeEpsilon;
+            if (nextKeyComponent == 0) nextKeyComponent = timeEpsilon;
             var keyComponent = Math.log(nextKeyComponent) / Math.log(lastKeyComponent);
             exp = thisLayer.linear(thisLayer.time, lastKey.time, nextKey.time, 1, keyComponent);
             return val = Math.pow(lastKeyComponent, exp);
@@ -1665,12 +1602,8 @@ var KeyExtra = function () {
 
         var numKey = KeyExtra.getKeyParameter(undefined, thisProperty, "num");
         var firstKey = KeyExtra.getKeyParameter(undefined, thisProperty, 1);
-        if (numKeys > 1 && numKey.time > thisLayer.time && firstKey.time <= thisLayer.time) {
-            return PropertyExtra.setPropertyByDimension(thisProperty, calculateExponent);
-        }
-        else {
-            return thisProperty.value;
-        }
+        if (numKeys > 1 && numKey.time > thisLayer.time && firstKey.time <= thisLayer.time) return PropertyExtra.setPropertyByDimension(thisProperty, calculateExponent);
+        else return thisProperty.value;
     }
 
     //四方抖动//
@@ -1685,9 +1618,7 @@ var KeyExtra = function () {
         if (mode == 2) modeCase = [0, 2, 1, 3];
         if (mode == 3) modeCase = [0, 2, 3, 1];
         //按照帧数进行运算
-        if (thisLayer.marker.numKeys == 0) {
-            var shakeTime = thisLayer.timeToFrames(thisLayer.time);
-        }
+        if (thisLayer.marker.numKeys == 0) var shakeTime = thisLayer.timeToFrames(thisLayer.time);
         else {
             var markerTime = thisLayer.marker.key(1).time;
             var shakeTime = thisLayer.timeToFrames(thisLayer.time) - thisLayer.timeToFrames(markerTime);
@@ -1735,15 +1666,9 @@ var KeyExtra = function () {
             num = Number(type) >= numKeys - 1 ? numKeys - 1 : Number(type);
             situation = lastKey.index >= num && lastKey.index < num + 1;
         }
-        if (type == "start") {
-            situation = lastKey.index <= 1;
-        }
-        if (type == "end") {
-            situation = lastKey.index >= numKeys - 1;
-        }
-        if (type == "start&end") {
-            situation = lastKey.index <= 1 || lastKey.index >= numKeys - 1;
-        }
+        if (type == "start") situation = lastKey.index <= 1;
+        if (type == "end") situation = lastKey.index >= numKeys - 1;
+        if (type == "start&end") situation = lastKey.index <= 1 || lastKey.index >= numKeys - 1;
         var elapsedTime = thisLayer.time - lastKey.time;
         var duration = nextKey.time - lastKey.time - timeEpsilon;
 
@@ -1753,12 +1678,8 @@ var KeyExtra = function () {
             return InterpolationExtra.setEasing(easingmode, elapsedTime, beginValue, changeValue, duration);
         }
 
-        if (situation) {
-            return PropertyExtra.setPropertyByDimension(thisProperty, easing);
-        }
-        else {
-            return thisProperty.value;
-        }
+        if (situation) return PropertyExtra.setPropertyByDimension(thisProperty, easing);
+        else return thisProperty.value;
     }
 
     //通过自定义贝塞尔设置关键帧曲线
@@ -1771,15 +1692,9 @@ var KeyExtra = function () {
             num = Number(type) >= numKeys - 1 ? numKeys - 1 : Number(type);
             situation = lastKey.index >= num && lastKey.index < num + 1;
         }
-        if (type == "start") {
-            situation = lastKey.index <= 1;
-        }
-        if (type == "end") {
-            situation = lastKey.index >= numKeys - 1;
-        }
-        if (type == "start&end") {
-            situation = lastKey.index <= 1 || lastKey.index >= numKeys - 1;
-        }
+        if (type == "start") situation = lastKey.index <= 1;
+        if (type == "end") situation = lastKey.index >= numKeys - 1;
+        if (type == "start&end") situation = lastKey.index <= 1 || lastKey.index >= numKeys - 1;
         var inPoint = shapeValue.points()[0];
         var outPoint = shapeValue.points()[1];
         var inTangent = shapeValue.outTangents()[0];
@@ -1812,12 +1727,8 @@ var MarkerKeyExtra = function () {
         //标记总数
         var markerNumber = targetLayerOrComp.marker.numKeys;
         //偏移索引数
-        if (!isNaN(offsetIndex) || offsetIndex == "num") {
-            offsetIndex = (!isNaN(offsetIndex)) ? Number(offsetIndex) : markerNumber;
-        }
-        else {
-            offsetIndex = offsetIndex || 0;
-        }
+        if (!isNaN(offsetIndex) || offsetIndex == "num") offsetIndex = (!isNaN(offsetIndex)) ? Number(offsetIndex) : markerNumber;
+        else offsetIndex = offsetIndex || 0;
         //对象属性判断
         if (getClassName(targetLayerOrComp) == "Layer") {
             //如果是图层
@@ -2248,9 +2159,7 @@ var BezierExtra = function () {
     module.isStraightLine = function (p1, cp1, cp2, p2) {
         var incident1 = ((VectorMathExtra.getDistance(p1, cp1) + VectorMathExtra.getDistance(p2, cp1)) == VectorMathExtra.getDistance(p1, p2));
         var incident2 = ((VectorMathExtra.getDistance(p1, cp2) + VectorMathExtra.getDistance(p2, cp2)) == VectorMathExtra.getDistance(p1, p2));
-        if (incident1 && incident2) {
-            return true;
-        }
+        if (incident1 && incident2) return true;
         return false;
     }
 
@@ -2264,9 +2173,7 @@ var BezierExtra = function () {
         for (i = 0, l = vertices.length - 1; i < l; i++) {
             bezierPoints.push([vertices[i], thisLayer.add(vertices[i], outTangents[i]), thisLayer.add(vertices[i + 1], inTangents[i + 1]), vertices[i + 1]]);
         }
-        if (closed) {
-            bezierPoints.push([vertices[vertices.length - 1], thisLayer.add(vertices[vertices.length - 1], outTangents[vertices.length - 1]), thisLayer.add(vertices[0], inTangents[0]), vertices[0]]);
-        }
+        if (closed) bezierPoints.push([vertices[vertices.length - 1], thisLayer.add(vertices[vertices.length - 1], outTangents[vertices.length - 1]), thisLayer.add(vertices[0], inTangents[0]), vertices[0]]);
         return bezierPoints;
     }
 
@@ -2316,9 +2223,7 @@ var TextExtra = function () {
         //插入第二个牌堆
         var arr2 = new Array();
 
-        for (var i = 0; i < num; i++) {
-            arr2.push(arr1[i]);
-        }
+        for (var i = 0; i < num; i++) arr2.push(arr1[i]);
         for (var i = arr1.length; i > num;) {
             var rnd = Math.floor(random() * (i - num) + num);
             arr2.push(arr1[rnd]);
@@ -2329,9 +2234,7 @@ var TextExtra = function () {
 
     //字符洗牌随机//
     module.textRandomShuffle = function (rate, sliderControl) {
-        if (sliderControl == undefined) {
-            sliderControl = 0;
-        }
+        if (sliderControl == undefined) sliderControl = 0;
         rate = rate || 15;//速率
         posterizeTime(rate);
         originArray = text.sourceText.value;
@@ -2342,9 +2245,7 @@ var TextExtra = function () {
     //重复//
     module.repeat = function (string, num) {
         finalResult = "";
-        for (i = 0, l = num; i < l; i++) {
-            finalResult += string;
-        }
+        for (i = 0, l = num; i < l; i++) finalResult += string;
         return finalResult;
     }
 
@@ -2373,12 +2274,8 @@ var TextExtra = function () {
             inCtrolTime = KeyExtra.getKeyParameter(undefined, keyOrMarkerControl, 1).time;
             outCtrolTime = KeyExtra.getKeyParameter(undefined, keyOrMarkerControl, "num").time;
         }
-        if (startText == undefined) {
-            startText = thisProperty.value;//初始值
-        }
-        if (endText == undefined) {
-            endText = TextExtra.repeat("/", startText.length);//末尾值
-        }
+        if (startText == undefined)  startText = thisProperty.value;//初始值
+        if (endText == undefined) endText = TextExtra.repeat("/", startText.length);//末尾值
         middleText = TextExtra.randomText(startText.length);//随机值
         if (offset == undefined) offset = 0.05;//偏移时间
         rate = rate || 15;//帧率
@@ -2428,9 +2325,7 @@ var ExpressionSelectorExtra = function () {
         var startVal = [100, 100, 100];
         var endVal = [0, 0, 0];
         var amp = div(sub(endVal, startVal), duration);
-        if (elapsedTime < duration) {
-            return linear(elapsedTime, 0, duration, startVal, endVal);
-        }
+        if (elapsedTime < duration) return linear(elapsedTime, 0, duration, startVal, endVal);
         var w = freq * Math.PI * 2;
         return add(endVal, mul(amp, (Math.sin((elapsedTime - duration) * w) / Math.exp(decay * (elapsedTime - duration)) / w)));
     }
