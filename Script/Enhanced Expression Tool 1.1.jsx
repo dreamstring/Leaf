@@ -6,6 +6,7 @@ var libraryFile = folderMatch(resourceFolderPath, /Enhanced Expression Library/g
 var libraryPath = libraryFile.fsName;//表达式增强库路径
 var listName = folderMatch(resourceFolderPath, /Enhanced Expression List/g).name;//列表名
 var listFile = folderMatch(resourceFolderPath, /Enhanced Expression List/g).file;//表达式增强库列表文件
+var groupIndex = 0;
 $.evalFile(listFile);//在此文件中加载list
 
 var script = {
@@ -270,9 +271,50 @@ var palette = (function () {
             }
         });
 
+        groupIndex = 1;
     }
 
     mainWindow.addListGroup();
+
+    //--- 表达式存储列表 ---//
+    var saveGroup;
+    mainWindow.addSaveGroup = function () {
+        saveGroup = mainWindow.add("group", undefined, { name: "saveGroup" });
+        saveGroup.orientation = "column";
+        saveGroup.spacing = 5;
+        saveGroup.margins = 0;
+        saveGroup.alignment = ["fill", "fill"];
+        saveGroup.alignChildren = ["fill", "fill"];
+
+        var saveTreeGroup = saveGroup.add("group", undefined, { name: "saveTreeGroup" });
+        saveTreeGroup.orientation = "column";
+        saveTreeGroup.spacing = 0;
+        saveTreeGroup.margins = 0;
+        saveTreeGroup.alignment = ["fill", "fill"];
+        saveTreeGroup.alignChildren = ["fill", "fill"];
+        var saveTreeView = saveTreeGroup.add("treeview", [0, 0, 160, 260], undefined, { name: "saveTreeView" });
+
+        var searchGroup = saveGroup.add("group", undefined, { name: "searchGroup" });
+        searchGroup.orientation = "column";
+        searchGroup.spacing = 0;
+        searchGroup.margins = 0;
+        searchGroup.alignment = ["fill", "bottom"];
+        var inputTips = "请输入搜索关键字";
+        var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { multiline: false, scrolling: false });
+        searchText.alignment = ["fill", "fill"];
+
+        searchText.onActivate = function () {
+            if (this.textCache === inputTips) return;
+            if (this.text === inputTips) this.text = "";
+        };
+
+        searchText.addEventListener("blur", function () {
+            this.textCache = this.text;
+            if (this.text === "") this.text = inputTips;
+        });
+
+        groupIndex = 2;
+    }
 
     //--- 主界面按钮事件 ---//
     function setEngineButton() {
@@ -309,9 +351,11 @@ var palette = (function () {
 
     expandButton.onClick = function () {
         if (expandButton.text == "◁") {
-            mainWindow.remove(listGroup);
+            if (groupIndex == 1) mainWindow.remove(listGroup);
+            if (groupIndex == 2) mainWindow.remove(saveGroup);
             mainWindow.layout.layout(1);
             mainWindow.layout.resize();
+            groupIndex = 0;
             return expandButton.text = "▶";
         }
         if (expandButton.text == "▶") {
@@ -324,8 +368,39 @@ var palette = (function () {
         }
     }
 
+    expandButton.addEventListener("click", function (e) {
+        if (e.button == 2) {
+            if (!groupIndex) {
+                var tempSize = mainWindow.size;
+                mainWindow.addSaveGroup();
+                mainWindow.layout.layout(1);
+                mainWindow.size = tempSize;
+                mainWindow.layout.resize();
+                return expandButton.text = "◁";
+            }
+            if (groupIndex == 1) {
+                var tempSize = mainWindow.size;
+                mainWindow.remove(listGroup);
+                mainWindow.addSaveGroup();
+                mainWindow.layout.layout(1);
+                mainWindow.size = tempSize;
+                mainWindow.layout.resize();
+                return;
+            }
+            if (groupIndex == 2) {
+                var tempSize = mainWindow.size;
+                mainWindow.remove(saveGroup);
+                mainWindow.addListGroup();
+                mainWindow.layout.layout(1);
+                mainWindow.size = tempSize;
+                mainWindow.layout.resize();
+                return;
+            }
+        }
+    })
+
     if (!(panelGlobal instanceof Panel)) {
-        expandButton.text == "▶";
+        expandButton.text = "◁";
         expandButton.onClick();
     }
 
@@ -381,16 +456,16 @@ var palette = (function () {
 
     helpButton.onClick = function () {
         var keyboardState = ScriptUI.environment.keyboardState;
-        if (keyboardState.ctrlKey) return (function(){
+        if (keyboardState.ctrlKey) return (function () {
             File(getPreferencespath()).execute();
             errorPanel.text = "请在AE关闭后找到Identifiers或Keywords修改并保存txt文件。\n重新启动AE即可实现表达式提示词的添加。";
         })()
-        if (keyboardState.shiftKey) return (function(){
+        if (keyboardState.shiftKey) return (function () {
             Folder(resourceFolderPath).execute();
             errorPanel.text = "已打开库路径文件夹。";
         })()
-        
-        if (keyboardState.altKey) return (function(){
+
+        if (keyboardState.altKey) return (function () {
             var txt = trimString(readTxt(File(identifierstxt)).toString());
             sendToClipboard(txt);
             errorPanel.text = txt;
@@ -829,8 +904,8 @@ function readTxt(txtFile) {
     return txtArray;
 }
 
-function trimString(str){
-    return str.replace(/(^\s*)|(\s*$)/g,"");
+function trimString(str) {
+    return str.replace(/(^\s*)|(\s*$)/g, "");
 }
 
 function folderMatch(resourceFolderPath, regexp) {
