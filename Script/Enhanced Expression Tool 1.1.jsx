@@ -1,5 +1,6 @@
 ﻿var thisFolderPath = File($.fileName).path;//文件夹路径
 var resourceFolderPath = thisFolderPath + "/Enhanced Expression";//资源文件夹路径
+var savedFolderPath = thisFolderPath + "/Saved Expression";//资源文件夹路径
 var toolName = File($.fileName).displayName;//表达式增强脚本名字
 var libraryName = folderMatch(resourceFolderPath, /Enhanced Expression Library/g).name;//库名
 var libraryFile = folderMatch(resourceFolderPath, /Enhanced Expression Library/g).file;//表达式增强库文件
@@ -7,6 +8,8 @@ var libraryPath = libraryFile.fsName;//表达式增强库路径
 var listName = folderMatch(resourceFolderPath, /Enhanced Expression List/g).name;//列表名
 var listFile = folderMatch(resourceFolderPath, /Enhanced Expression List/g).file;//表达式增强库列表文件
 var groupIndex = 0;
+var savedFolderTree = searchSavedFolder(Folder(savedFolderPath));
+var inputTips = "请输入搜索关键字";
 $.evalFile(listFile);//在此文件中加载list
 
 var script = {
@@ -156,7 +159,7 @@ var palette = (function () {
 
     //--- 增强表达式列表 ---//
     var listGroup;
-    mainWindow.addListGroup = function () {
+    mainWindow.addListGroup = function (inputText) {
         listGroup = mainWindow.add("group", undefined, { name: "listGroup" });
         listGroup.orientation = "column";
         listGroup.spacing = 5;
@@ -178,8 +181,12 @@ var palette = (function () {
         searchGroup.margins = 0;
         searchGroup.alignment = ["fill", "bottom"];
         var inputTips = "请输入搜索关键字";
-        var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { multiline: false, scrolling: false });
+        var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { name: "searchText", multiline: false, scrolling: false });
         searchText.alignment = ["fill", "fill"];
+
+
+        if (inputText == undefined) inputText = '';
+        searchText.text = inputText;
 
         searchText.onActivate = function () {
             if (this.textCache === inputTips) return;
@@ -200,10 +207,9 @@ var palette = (function () {
             if (treeElement == "Item") item = node.add("item", elementName);
         }
 
-        searchText.onChanging = function () {
+        var showSearchResult = function () {
             var textTemp = searchText.text == inputTips ? "" : searchText.text.toLowerCase();
             treeView.removeAll();
-
             for (key in expressionList) {
                 var description = expressionList[key];
                 var helpTip = helptipList[key.toString().slice(0, key.length - 5)];
@@ -230,8 +236,11 @@ var palette = (function () {
                     }
                 }
             }
-            if (scriptList.items.length > 0) scriptList.selection = 0;
+            if (treeView.items.length > 0) treeView.selection = 0;
         }
+
+        showSearchResult();
+        searchText.onChanging = showSearchResult;
 
         //树的双击事件
         treeView.onDoubleClick = function () {
@@ -278,7 +287,7 @@ var palette = (function () {
 
     //--- 表达式存储列表 ---//
     var saveGroup;
-    mainWindow.addSaveGroup = function () {
+    mainWindow.addSaveGroup = function (inputText) {
         saveGroup = mainWindow.add("group", undefined, { name: "saveGroup" });
         saveGroup.orientation = "column";
         saveGroup.spacing = 5;
@@ -299,9 +308,19 @@ var palette = (function () {
         searchGroup.spacing = 0;
         searchGroup.margins = 0;
         searchGroup.alignment = ["fill", "bottom"];
-        var inputTips = "请输入搜索关键字";
-        var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { multiline: false, scrolling: false });
+
+        var searchText = searchGroup.add("edittext", [0, 0, 160, 30], inputTips, { name: "searchText", multiline: false, scrolling: false });
         searchText.alignment = ["fill", "fill"];
+
+        if (inputText == undefined) inputText = '';
+        searchText.text = inputText;
+        buildSearchTree(savedFolderTree, savedFolderTree, inputText, undefined, saveTreeView);
+        showTree(saveTreeView, savedFolderTree, inputText);
+
+        searchText.onChanging = function () {
+            var textTemp = searchText.text == inputTips ? "" : searchText.text.toLowerCase();
+            if (searchText.text != inputTips) showTree(saveTreeView, savedFolderTree, textTemp);
+        }
 
         searchText.onActivate = function () {
             if (this.textCache === inputTips) return;
@@ -380,8 +399,9 @@ var palette = (function () {
             }
             if (groupIndex == 1) {
                 var tempSize = mainWindow.size;
+                var inputText = listGroup.searchGroup.searchText.text;
                 mainWindow.remove(listGroup);
-                mainWindow.addSaveGroup();
+                mainWindow.addSaveGroup(inputText);
                 mainWindow.layout.layout(1);
                 mainWindow.size = tempSize;
                 mainWindow.layout.resize();
@@ -389,8 +409,9 @@ var palette = (function () {
             }
             if (groupIndex == 2) {
                 var tempSize = mainWindow.size;
+                var inputText = saveGroup.searchGroup.searchText.text;
                 mainWindow.remove(saveGroup);
-                mainWindow.addListGroup();
+                mainWindow.addListGroup(inputText);
                 mainWindow.layout.layout(1);
                 mainWindow.size = tempSize;
                 mainWindow.layout.resize();
@@ -940,4 +961,54 @@ function sendToClipboard(info) {
     }
 
     system.callSystem(cmd);
+}
+
+function getNode(node, root, list, tree) {
+    if (list == undefined) list = {};
+    if (node.displayName == root.displayName) return list[node.displayName] = tree;
+    list[node.parent.displayName] = !!list[node.parent.displayName] ? list[node.parent.displayName] : getNode(node.parent, root, list, tree);
+    return list[node.displayName] = !!list[node.displayName] ? list[node.displayName] : list[node.parent.displayName].add("node", node.displayName);
+}
+
+function showTree(targetTree, targetFolderTree, textTemp) {
+    targetTree.removeAll();
+    var searchList = {};
+    buildSearchTree(targetFolderTree, targetFolderTree, textTemp, searchList, targetTree);
+    if (textTemp != "") {
+        for (key in searchList) {
+            searchList[key].expanded = true;
+        }
+    }
+}
+
+function buildTree(node, root, list, tree) {
+    if (list == undefined) list = {};
+    if (node.displayName == root.displayName) list[node.displayName] = tree;
+    if (node.displayName != root.displayName) getNode(node, root, list, tree);
+    if (node.children) node.children.forEach(function (child) { buildTree(child, root, list, tree); })
+}
+
+function buildSearchTree(node, root, text, list, tree) {
+    if (list == undefined) list = {};
+    if (node.displayName == root.displayName) list[node.displayName] = tree;
+    if (node.displayName != root.displayName && node.displayName.toLowerCase().indexOf(text) >= 0) {
+        getNode(node, root, list, tree);
+        if (node.children) node.children.forEach(function (child) { buildTree(child, root, list, tree); })
+    }
+    if (node.children) node.children.forEach(function (child) { buildSearchTree(child, root, text, list, tree); })
+}
+
+function searchSavedFolder(node) {
+    var result = {};
+    result.children = [];
+    result.parent = node.parent;
+    result.displayName = node.displayName;
+    var files = node.getFiles();
+    for (var i = 0, l = files.length; i < l; i++) {
+        var file = files[i];
+        file.parent = node;
+        if (file instanceof File) result.children.push(file);
+        if (file instanceof Folder) result.children.push(searchSavedFolder(file));
+    }
+    return result;
 }
