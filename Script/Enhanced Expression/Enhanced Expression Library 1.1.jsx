@@ -46,9 +46,9 @@ function getExpressionEngine() {
 function getLanguage() {
     try { thisLayer(0); }
     catch (error) {
-        if (error == "Error: index out of range") return "en_US";
-        if (error == "Error: 索引超出范围") return "zh_CN";
-        return error;
+        if (error.message == "index out of range") return "en_US";
+        if (error.message == "索引超出范围") return "zh_CN";
+        return error.message;
     }
 }
 
@@ -82,8 +82,8 @@ function isEffectGroup(targetProperty, index) {
     try {
         return !targetProperty(index);
     } catch (error) {
-        if (getLanguage() == "zh_CN" && error == "Error: 无法使用此参数类型") return true;
-        if (getLanguage() == "en_US" && error == "Error: can’t use this param type") return true;
+        if (getLanguage() == "zh_CN" && error.message == "无法使用此参数类型") return true;
+        if (getLanguage() == "en_US" && error.message == "can’t use this param type") return true;
     }
 }
 
